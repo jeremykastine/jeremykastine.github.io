@@ -1,0 +1,470 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Canon Game</title>
+    <style type="text/css">
+        canvas {
+            border: 2px solid rgb(18, 0, 83)
+        }
+    </style>
+</head>
+<body> 
+    <button onclick="begin()">Click to start</button> Refresh to stop
+
+    <div class="slidecontainer">
+        <label for="spawnSlider">Probability of character spawning</label>
+        <input type="range" min="0" max="1" value=".5" step=".05" class="slider" id="spawnSlider" oninput="this.nextElementSibling.value = this.value">
+        <output></output>
+    </div>
+    <div class="slidecontainer">
+        <label for="userSlider">Probability of user-controlled</label>
+        <input type="range" min="0" max="1" value=".5" step=".05" class="slider" id="userSlider" oninput="this.nextElementSibling.value = this.value">
+        <output></output>
+    </div>
+    <canvas style="float:left;" id="myCanvas" > </canvas>
+    <script>
+
+        function begin(){
+            playNote(part[0].synth,0)
+            UpdateScreen();
+
+        }
+
+        function playNote(synth,freq){
+
+            audioCtx = new AudioContext();
+            var mainOsc = audioCtx.createOscillator();
+            var mainFilter = audioCtx.createBiquadFilter();
+            var mainGainA= audioCtx.createGain();
+            var mainGainB = audioCtx.createGain();
+            var mainPan = audioCtx.createStereoPanner();
+            mainOsc.connect(mainFilter);
+            mainFilter.connect(mainGainA);
+            mainGainA.connect(mainGainB);
+            mainGainB.connect(mainPan);
+            mainPan.connect(audioCtx.destination);
+
+            mainOsc.type = synth.timbre.osc;
+            
+            mainOsc.frequency.value = freq;
+            mainFilter.type = "bandpass";
+            mainFilter.Q.value=synth.timbre.filterQ;
+            mainFilter.frequency.value=synth.timbre.filterFreq;
+            mainGainB.gain.value=0;
+            mainPan.pan.value=synth.pan;
+            now=audioCtx.currentTime;
+
+            mainGainB.gain.setValueAtTime(0,now);
+            for(let i=0;i<synth.envelope.gain.length;i++){
+                mainGainB.gain.linearRampToValueAtTime(synth.envelope.gain[i],synth.envelope.time[i]);
+            }
+            mainOsc.start();
+            let endNote = now+synth.envelope.time[synth.envelope.time.length-1]+.1;
+            mainOsc.stop(endNote);
+             
+            mainGainA.gain.value=synth.gain;
+            if(synth.lfo != null){
+                var lfoOsc = audioCtx.createOscillator();
+                var lfoGain = audioCtx.createGain();
+                lfoOsc.connect(lfoGain);
+                if(synth.lfo.type="vib"){
+                    lfoGain.connect(mainOsc.detune);
+                } else {
+                    lfoGain.connect(mainGainA.gain);
+                    mainGainA.gain.value=synth.gain*(1-synth.lfo.amp/2);
+                    lfoGain.gain.value=-synth.gain*synth.lfo.amp/2;
+                }
+                
+                lfoOsc.type=synth.lfo.osc;
+                lfoOsc.frequency.value=synth.lfo.freq;
+                lfoGain.gain.value=synth.lfo.amp;
+                lfoOsc.start();
+                lfoOsc.stop(endNote);
+            }            
+        }
+
+
+
+
+        
+        var canvas = document.getElementById("myCanvas");
+        var c = canvas.getContext("2d");
+
+        function Character(part,iteration,status,nextNote,xPos,yPos,user){
+            this.part=part;
+            this.iteration=iteration;
+            this.status=status; 
+            this.nextNote=nextNote;
+            this.xPos=xPos;
+            this.yPos=yPos;
+            this.user=user;
+            this.prevNote = function () {
+                if (this.part.score.aug>0){
+                    return this.nextNote-1;
+                } else {
+                    return this.nextNote+1;
+                }
+            }
+            this.PositionY = function(melodyOrBase) {
+                if (melodyOrBase=="melody"){
+                    melodyOrBase=this.part.score.melody;
+                    dip=this.part.score.mDip;
+                } else {
+                    melodyOrBase=this.part.score.base;
+                    dip=this.part.score.bDip;
+                }
+                if((this.part.score.aug>0 && this.nextNote==0) || (this.part.score.aug<0 && this.nextNote==-1)){
+                    x1=windowLeft;
+                    y1=melodyOrBase[0]-dip;
+                    x2=rhythm[0]-1;
+                    y2=melodyOrBase[0]-dip;
+                    x3=rhythm[0];
+                    y3=melodyOrBase[0];
+                }else if((this.part.score.aug>0 && this.nextNote==rhythm.length) || (this.part.score.aug<0 && this.nextNote==rhythm.length-1)){
+                    x1=rhythm[rhythm.length-1];
+                    y1=melodyOrBase[rhythm.length-1];
+                    x2=rhythm[rhythm.length-1]+1;
+                    y2=melodyOrBase[rhythm.length-1]-dip;
+                    x3=windowRight;
+                    y3=melodyOrBase[rhythm.length-1]-dip;
+                }else {
+                    x1=rhythm[this.prevNote()];
+                    y1=melodyOrBase[this.prevNote()];
+                    x3=rhythm[this.nextNote];
+                    y3=melodyOrBase[this.nextNote];
+                    x2=(x1+x3)/2;
+                    if(this.part.score.mDip>0){
+                        y2=Math.min(y1,y3)-dip;
+                    } else {
+                        y2=Math.max(y1,y3)-dip;
+                    }
+                }
+                return quadraticFunction(x1,y1,x2,y2,x3,y3,this.xPos);
+            }
+            this.update = function () {
+                chanceSpawn = document.getElementById("spawnSlider").value;
+                chanceUser = document.getElementById("userSlider").value;
+                xOld = PositionX(this.part,prevBeat,this.iteration);
+                xNew = PositionX(this.part,curBeat,this.iteration);
+                if(xNew>windowRight+1 || xNew<windowLeft-1){
+                    this.status="dead";
+                    return;
+                }
+                if(this.user){
+                    if(inInterval(rhythm[this.nextNote]-.33/this.part.score.aug,xOld,xNew)){
+                        if(this.status=="traveling"){this.status="prebeat1";}
+                    } else if(inInterval(rhythm[this.nextNote],xOld,xNew)){
+                        if(this.status=="prebeat1"){
+                            this.status="postbeat";
+                        } else if(this.status=="prebeat2"){
+                            this.status="traveling";
+                            this.nextNote=this.nextNote+Math.sign(this.part.score.aug);
+                        }
+                    } else if(inInterval(rhythm[this.nextNote]+.33/this.part.score.aug,xOld,xNew)){
+                        if(this.status!=="traveling"){
+                            this.status="dead";
+                        }
+                    } else if(xNew>windowRight){
+                        this.status="dead";
+                    }
+                    if(this.status=="traveling" || this.status=="prebeat1"){
+                        this.xPos = xNew;
+                        this.yPos = this.PositionY("melody");
+                    } else {
+                        this.xPos = rhythm[this.nextNote];
+                        this.yPos = this.part.score.melody[this.nextNote];
+                    } 
+                }else{
+                    if(inInterval(rhythm[this.nextNote],xOld,xNew)){
+                        playNote(this.part.synth,zeroPitch*Math.pow(2,this.part.score.melody[this.nextNote]/12));
+                        this.xPos = rhythm[this.nextNote];
+                        this.yPos = this.part.score.melody[this.nextNote];
+                        this.nextNote=this.nextNote+Math.sign(this.part.score.aug);
+                    } else {
+                        this.xPos = xNew;
+                        this.yPos = this.PositionY("melody");
+                    }
+                }
+            };
+            
+        }
+
+        function quadraticFunction(x1,y1,x2,y2,x3,y3,x){
+
+            let a=x1-2*x2+x3;
+            let b=-2*x1+2*x2;
+            let c=x1-x;
+            var t;
+            if(a==0){
+                t=-c/b;
+            } else{
+                t=(-b+Math.sqrt(Math.pow(b,2)-4*a*c))/(2*a);
+            }
+            return Math.pow(1-t,2)*y1+2*(1-t)*t*y2+Math.pow(t,2)*y3;
+        }
+
+        function PositionX(p,b,i){
+            return (b-p.score.trans-i*p.score.period)/p.score.aug;
+        }
+
+
+        
+        document.addEventListener('keydown', logKey);
+
+        function logKey(e) {
+            for(let i=0;i<character.length;i++){
+                if(character[i].part.key==e.key){
+                    if(character[i].status=="prebeat1"){
+                        playNote(character[i].part.synth,zeroPitch*Math.pow(2,character[i].part.score.melody[character[i].nextNote]/12));
+                        character[i].status="prebeat2";
+                    } else if(character[i].status=="postbeat"){
+                        playNote(character[i].part.synth,zeroPitch*Math.pow(2,character[i].part.score.melody[character[i].nextNote]/12));
+                        character[i].status="traveling";
+                        character[i].nextNote=character[i].nextNote+Math.sign(character[i].part.score.aug);
+                    } else if(character[i].status=="traveling" && character[i].xPos>Math.min(...rhythm)-1.5 && character[i].xPos<Math.max(...rhythm)){
+                        character[i].status="dead";
+                    }
+                }
+            }
+
+        }
+        
+
+        function inInterval(a,b,c){
+            if(a>=Math.min(b,c) && a<Math.max(b,c)){
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        function scaleX(x){
+            return (x-windowLeft)/(windowRight-windowLeft)*canvas.width;
+        }
+        function scaleY(y){
+            return (windowTop-y)/(windowTop-windowBottom)*canvas.height;
+        }
+        function getContrastYIQ(hexcolor){
+            hexcolor = hexcolor.substring(1);
+            var r = parseInt(hexcolor.substr(0,2),16);
+            var g = parseInt(hexcolor.substr(2,2),16);
+            var b = parseInt(hexcolor.substr(4,2),16);
+            var yiq = ((r*299)+(g*587)+(b*114))/1000;
+            return (yiq >= 128) ? 'black' : 'white';
+        }
+        function drawEverything(){
+            c.beginPath();
+            c.moveTo(0,scaleY(lineHeight));
+            c.lineTo(canvas.width,scaleY(lineHeight));
+            lineFade=lineFade*.9;
+            c.globalAlpha=lineFade;
+            c.stroke();
+            c.globalAlpha=1;
+            var cx;
+            var cy;
+            var nx;
+            var ny;
+            for(let i=0;i<part.length;i++){
+                
+                c.beginPath();
+                nx=windowLeft;
+                ny=part[i].score.base[0]-part[i].score.bDip;
+                c.moveTo(scaleX(nx), scaleY(ny));
+                cx=rhythm[0]-1;
+                cy=part[i].score.base[0]-part[i].score.bDip;
+                nx=rhythm[0];
+                ny=part[i].score.base[0];
+                c.quadraticCurveTo(scaleX(cx), scaleY(cy), scaleX(nx), scaleY(ny));
+                for(let j=1;j<rhythm.length;j++){
+                    cx=(rhythm[j-1]+rhythm[j])/2;
+                    if(part[i].score.bDip>0){
+                        cy=Math.min(part[i].score.base[j-1],part[i].score.base[j])-part[i].score.bDip;
+                    } else{
+                        cy=Math.max(part[i].score.base[j-1],part[i].score.base[j])-part[i].score.bDip;
+                    }
+                    nx=rhythm[j];
+                    ny=part[i].score.base[j];
+                    c.quadraticCurveTo(scaleX(cx), scaleY(cy), scaleX(nx), scaleY(ny));
+                }
+                cx=rhythm[rhythm.length-1]+1;
+                cy=part[i].score.base[rhythm.length-1]-part[i].score.bDip;
+                nx=windowRight;
+                ny=part[i].score.base[rhythm.length-1]-part[i].score.bDip;
+                c.quadraticCurveTo(scaleX(cx), scaleY(cy), scaleX(nx), scaleY(ny));
+                c.stroke(); 
+            }
+            for(let i=0;i<character.length;i++){
+                c.beginPath();
+                c.moveTo(scaleX(character[i].xPos) , scaleY(character[i].yPos));
+                c.lineTo(scaleX(character[i].xPos) , scaleY(character[i].PositionY("base")));
+                c.stroke();
+                c.beginPath();
+                c.arc(scaleX(character[i].xPos) , scaleY(character[i].yPos),14,0,6.3);
+                if(character[i].user){
+                    c.fillStyle = character[i].part.score.color;
+                } else {
+                    c.fillStyle = "White";
+                }
+
+                
+                c.fill();
+                c.stroke();
+                c.font = "14px Arial";
+                c.textAlign = "center";
+                c.textBaseline = "middle";
+                if(character[i].user){
+                    c.fillStyle = getContrastYIQ(character[i].part.score.color);
+                } else {
+                    c.fillStyle = "Black";
+                }
+                
+                c.fillText(character[i].part.key, scaleX(character[i].xPos) , scaleY(character[i].yPos)); 
+                
+            }
+            
+        }
+
+        function SpawnNewCharacter(p){
+            
+            var spawnPoint;
+            var nextNote;
+            if(p.score.aug>0){
+                spawnPoint = windowLeft;
+                nextNote = 0;
+            } else {
+                spawnPoint = windowRight;
+                nextNote = rhythm.length-1;
+            }
+            let i = Math.round((spawnPoint*p.score.aug-curBeat+p.score.trans)/-p.score.period);
+            if(inInterval(spawnPoint,PositionX(p,curBeat,i),PositionX(p,prevBeat,i))){
+                var spawn = Math.random() <= chanceSpawn;
+                if(spawn){
+                    var user = Math.random() <= chanceUser;
+                    character.push(new Character(p,i,"traveling",nextNote,PositionX(p,curBeat,i),canvas.height/2,user));
+                }
+            }
+        }
+
+        function UpdateScreen(){
+            prevBeat = curBeat;
+            curBeat = bpm/60*.001*(new Date().getTime())
+            canvas.height=window.innerHeight*.8;
+            canvas.width=window.innerWidth*.95;
+            var e1;
+            var e2;
+            for(let i=0;i<composite.rhythm.length;i++){
+                e1=((prevBeat+.5) % composite.period)-.5;
+                e2=((curBeat+.5) % composite.period)-.5;
+                if(e1<composite.rhythm[i] && composite.rhythm[i]<=e2){
+                    playNote(composite.synth,zeroPitch*Math.pow(2, composite.melody[i]/12));
+                    lineHeight=composite.melody[i];
+                    lineFade=1;
+                    break;
+                }
+            }
+            
+            for(let i=0;i<part.length;i++){
+               SpawnNewCharacter(part[i]);
+            }
+            if(document.hasFocus==false){character=[]}
+            for(let i=0;i<character.length;i++){
+               character[i].update();
+               if (character[i].status=="dead"){
+                   character.splice(i, 1);
+                   i=i-1;
+               }
+            }
+            drawEverything();
+            if(document.hasFocus()){
+                requestAnimationFrame(UpdateScreen);
+            }
+            
+        }
+
+        function Score(aug,trans,period,melody,mDip,base,bDip,color){
+            this.aug = aug;
+            this.trans = trans;
+            this.period = period;
+            this.melody = melody;
+            this.mDip = mDip;
+            this.base = base;
+            this.bDip = bDip;
+            this.color = color;
+        }
+
+        function Timbre(osc,filterFreq,filterQ){
+            this.osc = osc;
+            this.filterFreq = filterFreq;
+            this.filterQ = filterQ;
+        }
+        function Lfo(type,osc,freq,amp,shift){
+            this.type = type;
+            this.osc = osc;
+            this.freq = freq;
+            this.amp = amp;
+            this.shift = shift;
+        }
+        function Envelope(gain,time){
+            this.gain = gain;
+            this.time = time;
+        }
+        function Synth(timbre,lfo,envelope,gain,pan){
+            this.timbre = timbre;
+            this.lfo = lfo;
+            this.envelope = envelope;
+            this.gain = gain;
+            this.pan = pan;
+        }
+        function Part(score,synth,key) {
+            this.score = score;
+            this.synth = synth;
+            this.key = key;
+        }
+        var chanceSpawn=.2;
+        var chanceUser=.8;
+        var composite = {rhythm:[0,2,4,7,8,9,10,11,13,14,15,16,18,19,22], period:25, melody:[0,7,14,8,2,15,9,11,18,16,10,4,19,13,22], synth:new Synth(new Timbre("sine",200,0), null, new Envelope([1,1,0],[.01,.05,.06]), .5, .5)};
+        var lineHeight;
+        var lineFade;
+        var rhythm = [0,2,7,8,11]
+        var part = [];
+        part[0] = new Part(
+            new Score(1,0,25,[0,7,8,2,11],4,[0,7,8,2,11],4,"#FFFF00"), 
+            new Synth(new Timbre("square",200,10), null, new Envelope([1,1,0],[.01,.2,.3]), 2, .5),
+            "9");
+        part[1] = new Part(
+            new Score(1,2,25,[7,14,15,9,18],4,[0,7,8,2,11],4,"#00FF00"), 
+            new Synth(new Timbre("square",2000,10), null, new Envelope([1,1,0],[.01,.2,.3]), 1, .5),
+            "7");
+        part[2] = new Part(
+            new Score(1,7,25,[8,15,16,10,19],4,[0,7,8,2,11],4,"#00FF00"), 
+            new Synth(new Timbre("square",2000,10), null, new Envelope([1,1,0],[.01,.2,.3]), 1, .5),
+            "h");
+        part[3] = new Part(
+            new Score(1,8,25,[2,9,10,4,13],4,[0,7,8,2,11],4,"#00FF00"), 
+            new Synth(new Timbre("square",2000,10), null, new Envelope([1,1,0],[.01,.2,.3]), 1, .5),
+            "f");
+        part[4] = new Part(
+            new Score(1,11,25,[11,18,19,13,22],4,[0,7,8,2,11],4,"#00FF00"), 
+            new Synth(new Timbre("square",2000,10), null, new Envelope([1,1,0],[.01,.2,.3]), 1, .5),
+            "3");99
+        var bpm = 150;
+        var zeroPitch = 220;
+        var windowLeft = -6;
+        var windowRight = 14;
+        var windowBottom = -4;
+        var windowTop = 26;
+        
+        var character = [];
+
+        var prevBeat = bpm/60*.001*(new Date().getTime());
+        var curBeat = bpm/60*.001*(new Date().getTime());
+        
+
+    </script>
+</body>
+</html>
