@@ -67,6 +67,7 @@
             <option value="Algarin">Algarin</option>
             <option value="Grizzle">Grizzle</option>
             <option value="Hancock">Hancock</option>
+            <option value="Tharp">Tharp</option>
         </select>
         
         <button onclick="begin()">Start</button>
@@ -310,6 +311,21 @@
                     composite.period=22; 
                     composite.melody=[13,1,4,0,3,5,4,9,8,6,10,5,8,11,9,15];
                     windowLeft = -4; windowRight = 12; windowBottom = -6; windowTop = 19;
+                    break;
+                case "Tharp": 
+                    rhythm = [0,4,6,10]
+                    part=[
+                        new Part(new Score(1,1,16,[0,4,3,8],4,[-2,2,1,6],4),null,null,null),
+                        new Part(new Score(1,2,16,[2,6,5,10],4,[-2,2,1,6],4,),null,null,null),
+                        new Part(new Score(1,9,16,[5,9,8,13],4,[-2,2,1,6],4),null,null,null),
+                    ];
+                    document.getElementById('key0').value="R1";
+                    document.getElementById('key1').value="L1";
+                    document.getElementById('key2').value="R4";
+                    composite.rhythm=[1,2,3,5,6,7,8,9,11,12,13,15];
+                    composite.period=16; 
+                    composite.melody=[0,2,13,4,6,3,5,5,8,10,9,8];
+                    windowLeft = -4; windowRight = 14; windowBottom = -6; windowTop = 16;
                     break;
                 case "vals": 
                     rhythm = [0,2,7,8,11]
