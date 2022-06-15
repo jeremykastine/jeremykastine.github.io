@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Can you canon?</title>
+</head>
+<style>
+    html, body {margin: 0; height: 100%; overflow: hidden}
+    td {border: 1px solid black;}
+    .center {
+        margin-left: auto;
+        margin-right: auto;
+        }
+</style>
+<body>
+    <table>
+        <tr>
+            <td style="width:30%;border-style: none;vertical-align: top;">
+                Instructions
+                <div style="border-style:double;height:5em;overflow-y:scroll;overflow-x:auto">
+                    Compose a melody that you would like to use as the theme of a canon.
+                    <ul style="margin:0">
+                        <li>Use the arrow keys to move the notes around.</li>
+                        <li>Use the spacebar or enter key to add a new note.</li>
+                        <li>Use the delete or backspace button to remove a note.</li>
+                        <li>To activate a different note (to move or delete it), press the corresponding number on the keyboard/number pad.</li>
+                    </ul> 
+                </div >
+                
+                <br>
+                <button id="playButton" onclick="playButton()">Hear your melody</button>
+                <br><br>
+
+                <label for="tempo">Tempo: </label>
+                <input type="text" id="tempo" maxLength="3" size="3" value="150" inputmode="numeric"><br>
+                <label for="baseFreq">Base frequency: </label>
+                <input type="text" id="baseFreq" maxLength="3" size="3" value="220" inputmode="numeric"><br>
+                <label for="nTET">Tones per octave: </label>
+                <input type="text" id="nTET" maxLength="3" size="3" value="12" inputmode="numeric"><br>
+                <br>
+                Done composing your theme? <button id="doneButton" onclick="doneButton()">Start composing your canon!</button> <br>
+            </td>
+            <td style="width:70%;border-style: none;">
+                <canvas id="myCanvas"> </canvas>
+            </td>
+        </tr>
+    </table>
+
+
+    <script src="curve.js"></script>
+    <script src="audio.js"></script>
+    <script>
+
+
+        function doneButton(){
+            window.location="ComposeCanon.html?rhythm="+rhythm+"&pitches="+melody;
+        }
+
+
+
+
+        let audioCtx;
+        let currentTime;
+        let prevTime;
+        let currentBeat;
+        let prevBeat;
+        let currentlyPlaying=false;
+        var canvas = document.getElementById("myCanvas");
+        var c = canvas.getContext("2d");
+        
+
+        let rhythm = [0,1];
+        let melody = [0,0];
+        let maxX;
+        let maxY;
+        let minY;
+        
+
+
+
+        let currentNote = 1;
+
+
+        function playButton(){
+            document.getElementById('playButton').blur(); 
+            if(currentlyPlaying==false){
+                currentBeat = -3; 
+                currentlyPlaying = true; 
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            } else {
+                currentlyPlaying=false;
+            }
+        }
+
+        function distBeatPart(b,p){
+            let d = 999;
+            for(let i=0;i<rhythm.length;i++){
+                if(Math.abs(partList[p].horizontalShift+rhythm[i]-b)<d){
+                    d=Math.abs(partList[p].horizontalShift+rhythm[i]-b);
+                }
+            }
+            return d;
+        }
+        function drawEverything(){
+            canvas.height=window.innerHeight-5;
+            canvas.width=window.innerWidth*.69;
+            prevTime=currentTime;
+            currentTime = Date.now();
+            
+
+            c.clearRect(0,0,canvas.width,canvas.height);
+
+            maxX=Math.max(Math.max(...rhythm)+2,8);
+            maxY=Math.max(Math.max(...melody)+2,8);
+            minY=Math.min(Math.min(...melody)-2,0);
+
+            
+            c.globalAlpha=1;
+            c.lineWidth = 1;
+            
+            for(let i=0;i<maxX+1;i++){
+                c.beginPath();
+                let x=canvas.width/(maxX+2)*(i+1); 
+                if((i+500) % 5 ==0){c.strokeStyle = "gray";} else {c.strokeStyle = "lightGray";}
+                c.moveTo(x,canvas.height-20-(canvas.height-20)/(maxY-minY+2));
+                c.lineTo(x,canvas.height-20-(canvas.height-20)/(maxY-minY+2)*(maxY-minY+1));
+                c.stroke();
+                
+            }
+            for(let i=minY;i<maxY+1;i++){
+                c.beginPath();
+                let y=canvas.height-20-(canvas.height-20)/(maxY-minY+2)*(i+1-minY); 
+                if((i+500) % 5 ==0){c.strokeStyle = "gray";} else {c.strokeStyle = "lightGray";}
+                c.moveTo(canvas.width/(maxX+2),y);
+                c.lineTo(canvas.width/(maxX+2)*(maxX+1),y);
+                c.stroke();
+            }
+
+            const r = Math.min(canvas.width/(maxX+2),canvas.height/(maxY-minY+2),20)/2;
+
+            c.font = "20px Arial";
+            c.textBaseline = 'middle';
+            c.textAlign = 'right';
+            c.fillStyle = "gray";
+            c.globalAlpha=1;
+            for(let i=Math.ceil(minY/5)*5;i<=maxY;i+=5){
+                c.fillText(i, canvas.width/(maxX+2)*(0+1)-r-5, canvas.height-20-(canvas.height-20)/(maxY-minY+2)*(i+1-minY));
+            }
+            c.textBaseline = 'top';
+            c.textAlign = 'center';
+            for(let i=0;i<=maxX;i+=5){
+                c.fillText(i, canvas.width/(maxX+2)*(i+1), canvas.height-20-(canvas.height-20)/(maxY-minY+2)*(0+1)+r+5);
+            }
+
+
+            
+           
+            c.lineWidth=2;
+            c.strokeStyle="blue";  
+            c.fillStyle="blue";  
+            
+            let pts=[];
+            for(let j=0; j<rhythm.length;j++){
+                let x = canvas.width/(maxX+2)*(1+rhythm[j]); 
+                let y = canvas.height-20-(canvas.height-20)/(maxY-minY+2)*(1+melody[j]-minY);
+                pts.push(x,y);
+                c.beginPath();
+                c.arc(x,y,r,0,6.28);
+                c.globalAlpha=1;
+                c.stroke();
+                if(j==currentNote){
+                    c.fill();
+                }
+                
+
+                c.font = "30px Arial";
+                c.textAlign = 'left';
+                c.textBaseline = 'middle';
+                c.fillStyle = "black";
+                c.globalAlpha=1;
+                c.fillText(j+1, x+r, y);
+                c.fillStyle="blue";
+            }
+            c.globalAlpha=.25;
+            c.lineWidth=2*r;
+            c.beginPath();
+            c.lineCap = "round";
+            c.curve(pts);
+            c.stroke();
+
+
+
+            c.fillStyle="black";
+            
+            if(currentlyPlaying==true){
+                prevBeat=currentBeat;
+                currentBeat+=(currentTime-prevTime)/60000*myParseInt(document.getElementById("tempo").value,150,60,300);
+                if(currentBeat>maxX+1){
+                    currentlyPlaying=false;
+                } else {
+                    c.beginPath();
+                    c.moveTo(canvas.width/(maxX+2)*(currentBeat+1),0);
+                    c.lineTo(canvas.width/(maxX+2)*(currentBeat+1),canvas.height);
+                    c.lineWidth=2;
+                    c.strokeStyle="black";
+                    c.stroke();
+                }
+
+                for(let j=0;j<rhythm.length;j++){
+                    const y = rhythm[j];
+                    if(prevBeat<y && y<=currentBeat){
+                        const f=myParseInt(document.getElementById("baseFreq").value,220,55,880)*2**(melody[j]/myParseInt(document.getElementById("nTET").value,12,6));
+                        playNote(f,2);
+                    }
+                }
+
+
+            }
+        }
+        function animationLoop(){
+            if(!document.hasFocus()){currentlyPlaying=false}
+            drawEverything();
+            window.requestAnimationFrame(animationLoop);
+        }
+        document.addEventListener('keydown', function(event) {
+            event.preventDefault;
+            if(document.activeElement.tagName==="INPUT"){
+                if(event.key==="Enter"){
+                    document.activeElement.blur();
+                }
+                return;
+            }
+            if(currentlyPlaying==false){
+                switch(event.key){
+                    case "ArrowUp":
+                        melody[currentNote]+=1;
+                        break;
+                    case "ArrowDown":
+                        melody[currentNote]-=1;
+                        break;
+                    case "ArrowRight":
+                        if(currentNote>0){
+                            if(currentNote==rhythm.length-1){
+                                    rhythm[currentNote]+=1;
+                            } else {
+                                if(rhythm[currentNote]<rhythm[currentNote+1]-1){
+                                    rhythm[currentNote]+=1;
+                                }
+                            }
+                        }
+                        break;
+                    case "ArrowLeft":
+                        if(currentNote>0){
+                            if(rhythm[currentNote]>rhythm[currentNote-1]+1){
+                                rhythm[currentNote]-=1;
+                            }
+                        }
+                        break;
+                    case "Backspace":
+                    case "Delete":
+                        if(rhythm.length>2 && currentNote>0){
+                            rhythm.splice(currentNote,1);
+                            melody.splice(currentNote,1);
+                            currentNote=rhythm.length-1;
+                        }
+                        break;
+                    case "Enter":
+                    case " ":
+                        rhythm.push(rhythm[rhythm.length-1]+1);
+                        melody.push(melody[melody.length-1]);
+                        currentNote=rhythm.length-1;
+                        break;
+                    default:
+                        
+                        let p=myParseInt(event.key,-1)-1;
+                        if(p>=0 && p<rhythm.length){
+                            currentNote = p;
+                    }
+                }
+            }
+            
+        });
+        function myParseInt(s,defaultVal,minVal=-99999,maxVal=99999){
+            if(isNaN(s)){
+                return defaultVal;
+            } else {
+                const n=parseInt(s);
+                if(n<=maxVal &&  n>=minVal){
+                    return n
+                } else {
+                    return defaultVal;
+                }
+            }
+        }
+        animationLoop();
+    </script>
+    
+</body>
+
