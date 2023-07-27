@@ -68,7 +68,7 @@
     document.getElementById("melody").value = m;
     for(i=1;i<numNotes;i++){
       m=9*Math.random();
-      document.getElementById("melody").value += ", " + m.toFixed(1);
+      document.getElementById("melody").value += ", " + Math.round(m,0);
     }
     
     
