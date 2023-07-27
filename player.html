@@ -212,12 +212,12 @@
 
 
 
-                    let v = modDist(currentBeat,rhythm[i][j],numBeats);
+                    let v = myMod(currentBeat-rhythm[i][j],numBeats);
                     
-                    if(v>.5 || currentlyPlaying==false){
+                    if(v>1 || currentlyPlaying==false){
                         c.font = beatHeight*.5+"px Arial";
                     } else {
-                        c.font = ((1-.5)/(0-.5)*(v)+1)*beatHeight+"px Arial";
+                        c.font = ((1-.5)/(0-1)*(v)+1)*beatHeight+"px Arial";
                     }
                     
                     
