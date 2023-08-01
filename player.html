@@ -1,0 +1,407 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+</head>
+<style>
+
+    table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  td {
+    padding: 10px;
+    vertical-align: top;
+  }
+
+</style>
+<body>
+
+
+
+<table>
+    <tr>
+      <td>
+        Press the Play button, and then choose which parts you want to hear. To save this canon, you can bookmark/copy the url.<br><br>
+        <button id="playButton" onclick="playButton()">Play/Stop</button><br><br>
+
+        <input type="checkbox" id="part1">
+        <span style="background-color: rgb(150, 255, 255)">
+            <label for="part1" id="part1label">Part 1</label>
+        </span>
+        <button id="button1" onclick="randomIns(0);//playNote(220,ins[0])">New patch</button>
+        <br>
+
+        <input type="checkbox" id="part2">
+        <span style="background-color: rgb(255, 150, 255)">
+            <label for="part2" id="part2label">Part 2</label>
+        </span>
+        <button id="button2" onclick="randomIns(1);//playNote(220,ins[1])">New patch</button>
+        <br>
+
+        <input type="checkbox" id="part3">
+        <span style="background-color: rgb(255, 255, 150)">
+            <label for="part3" id="part3label">Part 3</label>
+        </span>
+        <button id="button3" onclick="randomIns(2);//playNote(220,ins[2])">New patch</button>
+        <br>
+
+        <input type="checkbox" id="part4">
+        <span style="background-color: rgb(200, 200, 255)">
+            <label for="part4" id="part4label">Part 4</label>
+        </span>
+        <button id="button4" onclick="randomIns(3);//playNote(220,ins[3])">New patch</button>
+        <br>
+
+        <input type="checkbox" id="part5">
+        <span style="background-color: rgb(255, 200, 200)">
+            <label for="part5" id="part5label">Part 5</label>
+        </span>
+        <button id="button5" onclick="randomIns(4);//playNote(220,ins[4])">New patch</button>
+        <br>
+
+        <input type="checkbox" id="part6">
+        <span style="background-color: rgb(200, 255, 200)">
+            <label for="part6" id="part6label">Part 6</label>
+        </span>
+
+        
+
+
+
+        <button id="button6" onclick="randomIns(5);//playNote(220,ins[5])">New patch</button>
+        <br>
+        <br>
+        <label for="tempo">Tempo: </label> <input type="number" id="tempo" min="60" max="600" step="10" value="250"><br>
+        <label for="baseFreq">Base frequency: </label>
+        <select id="baseFreq">
+            <option value="110">110</option>
+            <option value="220" selected>220</option>
+            <option value="440">440</option>
+        </select><br>
+        <label for="nearestHalfStep">Pitches to nearest half-step: </label>
+        <input type="checkbox" id="nearestHalfStep">
+        <br><br>
+        Send questions and comments to jeremy.kastine@life.edu.
+
+
+        
+
+      </td>
+      <td>
+        <canvas id="myCanvas" style="border: 3px solid black"></canvas>
+      </td>
+    </tr>
+  </table>
+  
+  
+
+
+
+    <script src="audio.js"></script>
+
+    
+    <script>
+        const colorArray = ["blue","red","yellow","purple","orange","green"];
+        const noteNames = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"];
+
+        let ins = [null,null,null,null,null,null]
+        function randomIns(n){
+            ins[n] = [];
+            for(let i=0;i<15;i++){
+                ins[n].push(Math.random());
+            }
+            console.log(n);
+        }
+        for(let i=0;i<6;i++){
+            console.log(i);
+            randomIns(i);
+        }
+        console.log(ins);
+        let audioCtx;
+        let currentTime;
+        let prevTime;
+        let currentBeat;
+        let prevBeat;
+        let currentlyPlaying=false;
+        var canvas = document.getElementById("myCanvas");
+        var c = canvas.getContext("2d");
+        
+        const q = new URLSearchParams(window.location.search);
+        if(q==""){
+            rhythm=[[0,5,10],[12,2,7]];
+            melody=[[0,7,12],[0,7,12]];
+            numBeats = 15;
+            
+        } else {
+            numBeats = Number(q.get("numBeats"));
+            rhythm = q.get("rhythm").split(";");
+            melody = q.get("melody").split(";");
+            for(i=0;i<rhythm.length;i++){
+                rhythm[i] = rhythm[i].split(",").map(Number);
+                rhythm[i] = rhythm[i].map(element => element % numBeats)
+                melody[i] = melody[i].split(",").map(Number);
+            }
+            
+        }
+
+        
+        
+        for(i=0;i<6;i++){
+            if(i<rhythm.length){
+                document.getElementById("part" + (i+1)).style.display = "inline";
+                document.getElementById("part" + (i+1)).checked = false;
+                document.getElementById("part" + (i+1)).disabled = true;
+                document.getElementById("part" + (i+1) +"label").style.display = "inline";
+                document.getElementById("button" + (i+1)).style.display = "inline";
+            } else {
+                document.getElementById("part" + (i+1)).style.display = "none";
+                document.getElementById("part" + (i+1) +"label").style.display = "none";
+                document.getElementById("button" + (i+1)).style.display = "none";
+            }
+
+        }
+
+
+
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        console.table(rhythm);
+        function playButton(){
+            document.getElementById('playButton').blur(); 
+            
+            if(currentlyPlaying==false){
+                for(i=0;i<6;i++){
+                    document.getElementById("part" + (i+1)).checked = false;
+                    document.getElementById("part" + (i+1)).disabled = false;
+                }
+                currentlyPlaying = true; 
+
+                playNote(440,null);
+            } else {
+                for(i=0;i<6;i++){
+                    document.getElementById("part" + (i+1)).checked = false;
+                    document.getElementById("part" + (i+1)).disabled = true;
+                }
+                currentlyPlaying=false;
+            }
+        }
+
+        function drawEverything(){
+            const beatHeight = 25;
+            const columnWidth = 70;
+
+
+            canvas.height=numBeats*beatHeight;
+            canvas.width=(rhythm.length+4)*columnWidth;
+
+            prevTime=currentTime;
+            currentTime = Date.now();
+            c.clearRect(0,0,canvas.width,canvas.height);
+            
+            
+            
+            
+            c.textBaseline = 'middle';
+            c.globalAlpha=1;
+            
+
+
+            
+
+            
+            
+            for(let i=0;i<rhythm.length;i++){
+                switch (i) {
+                    case 0:
+                        c.fillStyle = 'rgb(150,255,255)';
+                        break;
+                    case 1:
+                        c.fillStyle = 'rgb(255,150,255)';
+                        break;
+                    case 2:
+                        c.fillStyle = 'rgb(255,255,150)';
+                        break;
+                    case 3:
+                        c.fillStyle = 'rgb(200,200,255)';
+                        break;
+                    case 4:
+                        c.fillStyle = 'rgb(255,200,200)';
+                        break;
+                    case 5:
+                        c.fillStyle = 'rgb(200,255,200)';
+                        break;
+                }
+                let v1 = rhythm[i][0]-currentBeat+4-.5;
+                v1 = myMod(v1,numBeats)*beatHeight;
+                const v2 = columnWidth*(i+2.1);
+                let v3 = rhythm[i][rhythm[i].length-1]-currentBeat+5;
+                v3 = myMod(v3,numBeats)*beatHeight;
+                const v4 = .8*columnWidth;
+                if(v1<v3){
+                    c.fillRect(v2, v1, v4, v3-v1)
+                } else {
+                    c.fillRect(v2,v1,v4,canvas.height-v1);
+                    c.fillRect(v2,0,v4,v3);
+                }
+            }
+            for(let i=0;i<rhythm.length;i++){
+                for(let j=0;j<rhythm[i].length;j++){
+                    
+
+
+
+
+                    let v = myMod(currentBeat-rhythm[i][j],numBeats);
+                    
+                    if(v>1 || currentlyPlaying==false){
+                        c.font = beatHeight*.5+"px Arial";
+                    } else {
+                        c.font = ((1-.5)/(0-1)*(v)+1)*beatHeight+"px Arial";
+                    }
+                    
+                    
+
+                    c.textAlign = 'center';
+                    
+
+                    let y = rhythm[i][j]-currentBeat+4;
+                    y = myMod(y,numBeats)*beatHeight;
+                    
+                    //c.fillStyle = "aqua";
+                    //c.fillRect(columnWidth*(i+2.1),y-beatHeight/2,.8*columnWidth,beatHeight);
+                    c.fillStyle = "black";
+                    if(document.getElementById("nearestHalfStep").checked == true){
+                        c.fillText(melody[i][j].toFixed(0) + " : " + noteNames[myMod(Math.round(melody[i][j],0),12)], columnWidth*(i+2.5), y);
+                    } else {
+                        c.fillText(melody[i][j].toFixed(2), columnWidth*(i+2.5), y);
+                    }
+                    
+                    
+
+                    if(y<=canvas.height/numBeats){
+                        //c.fillStyle = "aqua";
+                        //c.fillRect(columnWidth*(i+2.1),y-beatHeight/2+canvas.height,.8*columnWidth,beatHeight);
+                        c.fillStyle = "black";
+                        c.fillText(melody[i][j], columnWidth*(i+2.5), y+canvas.height);
+                    } else if(y>=canvas.height*(numBeats-1)/numBeats){
+                        //c.fillStyle = "aqua";
+                        //c.fillRect(columnWidth*(i+2.1),y-beatHeight/2-canvas.height,.8*columnWidth,beatHeight);
+                        c.fillStyle = "black";
+                        c.fillText(melody[i][j], columnWidth*(i+2.5), y-canvas.height);
+                    } 
+                    
+                    if(currentlyPlaying==false){
+                        c.textAlign = 'left';
+                        c.fillStyle = "gray";
+                        c.font = beatHeight*.5+"px Arial";
+                        if(rhythm[i][j]<.9){
+                            c.fillText("0 = " + numBeats.toFixed(2), columnWidth*(.5), y);
+                            c.fillText("0 = " + numBeats.toFixed(2), columnWidth*(rhythm.length+2.5), y);
+                        } else {
+                            c.fillText(rhythm[i][j].toFixed(2), columnWidth*(.5), y);
+                            c.fillText(rhythm[i][j].toFixed(2), columnWidth*(rhythm.length+2.5), y);
+                        }
+                    } else {
+                        const prevJ = myMod(j-1,rhythm[i].length);
+                        const d1 = modDist(rhythm[i][prevJ],currentBeat,numBeats,1);
+                        const d2 = modDist(currentBeat,rhythm[i][j],numBeats,1); 
+                        if(d1+d2<numBeats){
+                            const t = d1/(d1+d2);
+                            const z1 = modDist(currentBeat,rhythm[i][j],numBeats);
+                            const z2 = modDist(currentBeat,rhythm[i][prevJ],numBeats);
+                            c.fillStyle = "black";
+                            c.globalAlpha = .2;
+                            c.fillRect(columnWidth*(i+2.1),beatHeight*(3.5-.5*t*z1-.5*(1-t)*z2),.8*columnWidth,beatHeight);
+                            //c.fillRect(columnWidth*(i+2.1),beatHeight*(3.5+.5*t*z1+.5*(1-t)*z2),.8*columnWidth,beatHeight);
+                            c.globalAlpha = 1;
+                            //c.rect(columnWidth*(i+2.1),beatHeight*(3.5+.5*t*z1+.5*(1-t)*z2),.8*columnWidth,beatHeight);
+                            c.rect(columnWidth*(i+2.1),beatHeight*(3.5-.5*t*z1-.5*(1-t)*z2),.8*columnWidth,beatHeight);
+                        }
+                        
+                    }
+                    
+                    
+
+                    
+                }
+            }
+
+
+
+            if(currentlyPlaying==true){
+                prevBeat=currentBeat;
+                currentBeat+=(currentTime-prevTime)/60000*myParseInt(document.getElementById("tempo").value,250,60,600);
+                // c.globalAlpha = .3;
+                // c.strokeStyle = "orange";
+                // c.moveTo(0,3.5*beatHeight);
+                // c.lineTo(canvas.width,3.5*beatHeight);
+                // c.stroke();
+                // c.globalAlpha = 1;
+            }
+
+            
+            c.lineWidth=1;
+            c.strokeStyle="black";
+            c.stroke();
+
+            for(let i=0;i<rhythm.length;i++){
+                for(let j=0;j<rhythm[i].length;j++){
+                    if(myMod(currentBeat-rhythm[i][j],numBeats)<myMod(prevBeat-rhythm[i][j],numBeats)){
+                        let f;
+                        if(document.getElementById("part"+(i+1)).checked){
+                            if(document.getElementById("nearestHalfStep").checked){
+                                f=myParseInt(document.getElementById("baseFreq").value,220,55,880)*2**(Math.round(melody[i][j],0)/12);
+                            } else {
+                                f=myParseInt(document.getElementById("baseFreq").value,220,55,880)*2**(melody[i][j]/12);
+                            }
+                            playNote(f,ins[i]);
+                        }
+                        
+                        
+                    }
+                }
+            }
+
+            
+        }
+        function myMod(x,n){
+            return ((x % n) + n) % n
+        }
+
+        function modDist(from,to,n,direction=0){
+            if(direction==1){
+                return myMod(to-from,n)
+            } else if (direction==-1){
+                return myMod(from-to,n)
+            } else {
+                return Math.min(myMod(to-from,n),myMod(from-to,n))
+            }
+        }
+        function animationLoop(){
+            if(!document.hasFocus()){currentlyPlaying=false}
+            drawEverything();
+            window.requestAnimationFrame(animationLoop);
+        }
+        animationLoop();
+        function myParseInt(s,defaultVal,minVal=-99999,maxVal=99999){
+            if(isNaN(s)){
+                return defaultVal;
+            } else {
+                const n=parseInt(s);
+                if(n<=maxVal &&  n>=minVal){
+                    return n
+                } else {
+                    return defaultVal;
+                }
+            }
+        }
+        
+        currentBeat=3.5;
+        drawEverything();
+    </script>
+    
+</body>
+
