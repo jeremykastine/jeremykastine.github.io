@@ -208,14 +208,14 @@
 
             for(let i=0;i<rhythm.length;i++){
                 for(let j=0;j<rhythm[i].length;j++){
-                    if(myMod(currentBeat-rhythm[i][j],period)<myMod(prevBeat-rhythm[i][j],period)){
-                        let f;
-                        if(document.getElementById("part"+(i+1)).checked){
-                            f=110*2**(pitches(i,j)/12);
-                            playNote(f,ins);
+                    if(myMod(currentBeat-prevBeat,period)<1){
+                        if(myMod(currentBeat-rhythm[i][j],period)<myMod(prevBeat-rhythm[i][j],period)){
+                            let f;
+                            if(document.getElementById("part"+(i+1)).checked){
+                                f=110*2**(pitches(i,j)/12);
+                                playNote(f,ins);
+                            }
                         }
-                        
-                        
                     }
                 }
             }
@@ -226,7 +226,7 @@
             return ((x % n) + n) % n
         }
         function pitches(part,note){
-            let melody = [0,3,2,-1];
+            let melody = [0,3,2,-1,0];
             return 12*part+melody[note];
         }
         function modDist(from,to,n,direction=0){
