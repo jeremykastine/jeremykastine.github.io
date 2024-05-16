@@ -30,7 +30,7 @@
         <label for="part1" id="part1label">Part 1</label><input type="checkbox" id="part1"> 
         <label for="part2" id="part2label">Part 2</label><input type="checkbox" id="part2"> 
         <label for="part3" id="part3label">Part 3</label><input type="checkbox" id="part3"> 
-
+        <label for="part4" id="part4label">Part 4</label><input type="checkbox" id="part4"> 
         
         <br>
         <canvas id="myCanvas" style="border: 3px solid black"></canvas>
@@ -60,7 +60,7 @@
         const q = new URLSearchParams(window.location.search);
 
         
-        rhythm = q.get("rhythm").split(";");
+        let rhythm = q.get("rhythm").split(";");
         for(i=0;i<rhythm.length;i++){
             rhythm[i] = rhythm[i].split(",").map(Number);
         }
@@ -72,10 +72,22 @@
         rhythmMax = Math.max(...compositeRhythm);
         console.log(compositeRhythm, rhythmMax);
 
+        let period;
+        if(q.has("period")){
+            period = parseFloat(q.get("period"));
+        } else {
+            period = Math.max(...compositeRhythm)+4;
+        }
+        let melody;
+        if(q.has("melody")){
+            melody = q.get("melody").split(";");
+            for(i=0;i<melody.length;i++){
+                melody[i] = melody[i].split(",").map(Number);
+            }
+        } else {
+            melody = [[0,3,2,-1,0],[12,15,14,11,12],[24,27,26,23,24],[36,39,37,35,36]];
+        }
 
-
-        
-        let period = rhythmMax+5; // replace with variable
         
         // for(i=0;i<3;i++){
         //     if(i<rhythm.length){
@@ -115,8 +127,8 @@
 
         function drawEverything(){
 
-            let pixPerBeat = 30;
-            let pixPerCol = 100;
+            let pixPerBeat = 20;
+            let pixPerCol = 70;
 
             canvas.height=pixPerBeat*(8+rhythmMax);
             canvas.width = pixPerCol*(rhythm.length+3);// window.innerWidth*.95
@@ -130,7 +142,6 @@
                 if(currentBeat>period){
                     currentBeat =currentBeat - period;
                 }
-                console.log(period,currentBeat);
             }
             c.clearRect(0,0,canvas.width,canvas.height);
             for(let shift = -1;shift<2;shift++){
@@ -142,7 +153,7 @@
                         c.fillStyle = 'black';
                         //c.fillText(rhythm[i][j]+period*shift,pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
                         c.fillText((rhythm[i][j]+period*shift).toFixed(1),pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
-                        c.fillText(pitches(i,j),pixPerCol*1.5,pixPerBeat*(4+rhythm[i][j]+shift*period));
+                        c.fillText(melody[i][j],pixPerCol*1.5,pixPerBeat*(4+rhythm[i][j]+shift*period));
                         
                         c.beginPath();
                         c.moveTo(pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
@@ -212,7 +223,7 @@
                         if(myMod(currentBeat-rhythm[i][j],period)<myMod(prevBeat-rhythm[i][j],period)){
                             let f;
                             if(document.getElementById("part"+(i+1)).checked){
-                                f=110*2**(pitches(i,j)/12);
+                                f=110*2**(melody[i][j]/12);
                                 playNote(f,ins);
                             }
                         }
@@ -225,10 +236,6 @@
         function myMod(x,n){
             return ((x % n) + n) % n
         }
-        function pitches(part,note){
-            let melody = [0,3,2,-1,0];
-            return 12*part+melody[note];
-        }
         function modDist(from,to,n,direction=0){
             if(direction==1){
                 return myMod(to-from,n)
@@ -239,24 +246,37 @@
             }
         }
         function bounceFunction(currentBeat,part=-1){
+            let a=999; // distance to previous
+            let b=999; // distance to next
+            let bounce;
             if(part==-1){
-                for(let i=0;i<compositeRhythm.length-1;i++){
-                    if(currentBeat>=myMod(compositeRhythm[i],period) && currentBeat<myMod(compositeRhythm[i+1],period)){
-                        return bf2((currentBeat-myMod(compositeRhythm[i],period))*(myMod(compositeRhythm[i+1],period)-currentBeat));
-                    }
+                for(let i=0;i<compositeRhythm.length;i++){
+                    a=Math.min(a,modDist(currentBeat,compositeRhythm[i],period,-1));
+                    b=Math.min(b,modDist(currentBeat,compositeRhythm[i],period,1));
+                    //console.log(currentBeat);
+                    //console.log(compositeRhythm[i]);
+                    //console.log(modDist(currentBeat,compositeRhythm[i],period,-1),modDist(currentBeat,compositeRhythm[i],period,1))
                 }
-                return bf2(myMod(currentBeat-compositeRhythm[compositeRhythm.length-1],period)*myMod(compositeRhythm[0]-currentBeat,period));
+                //console.log(a,b);
             } else {
-                for(let i=0;i<rhythm[part].length-1;i++){
-                    if(currentBeat>=myMod(rhythm[part][i],period) && currentBeat<myMod(rhythm[part][i+1],period)){
-                        return bf2((currentBeat-myMod(rhythm[part][i],period))*(myMod(rhythm[part][i+1],period)-currentBeat));
-                    }
+                for(let i=0;i<rhythm[part].length;i++){
+                    a=Math.min(a,modDist(currentBeat,rhythm[part][i],period,-1));
+                    b=Math.min(b,modDist(currentBeat,rhythm[part][i],period,1));
                 }
-                return bf2(myMod(currentBeat-rhythm[part][rhythm[part].length-1],period)*myMod(rhythm[part][0]-currentBeat,period));
             }
-        }
-        function bf2(x){
-            return .8*x/(x+3);
+            if(a+b>4){
+                if(a<2){
+                    bounce=a*(4-a)/4;
+                } else if(b<2){
+                    bounce=b*(4-b)/4;
+                } else {
+                    bounce=1;
+                }
+            } else {
+                bounce = 4*a*b/(a+b)**2
+                console.log(bounce);
+            }
+            return .75*Math.min(a+b,4)/4*bounce;
         }
 
 
