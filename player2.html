@@ -1,0 +1,313 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+</head>
+<style>
+
+    table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  td {
+    padding: 10px;
+    vertical-align: top;
+  }
+
+</style>
+<body>
+
+
+
+
+        
+        <button id="playButton" onclick="playButton()">Play/Stop</button>
+        <label for="tempo">Tempo: </label> <input type="number" id="tempo" min="60" max="600" step="10" value="200">
+        <br>
+        <canvas id="myCanvas" style="border: 3px solid black"></canvas>
+  
+  
+
+
+
+    <script src="audio.js"></script>
+
+    
+    <script>
+        const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
+        const noteNames = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"];
+
+        let ins = [0,.5,0,0,1,1,.5,.7,.3,.5]
+        
+        let audioCtx;
+        let currentTime;
+        let prevTime;
+        let currentBeat;
+        let prevBeat;
+        let currentlyPlaying=false;
+        var canvas = document.getElementById("myCanvas");
+        var c = canvas.getContext("2d");
+        
+        const q = new URLSearchParams(window.location.search);
+
+        
+        let rhythm = q.get("rhythm").split(";");
+        for(i=0;i<rhythm.length;i++){
+            rhythm[i] = rhythm[i].split(",").map(Number);
+        }
+        
+        let compositeRhythm = rhythm.reduce((acc, curr) => acc.concat(curr), []);
+        compositeRhythm.sort((a, b) => a - b);
+        rhythmMax = Math.max(...compositeRhythm);
+        console.log(compositeRhythm, rhythmMax);
+
+        let period;
+        if(q.has("period")){
+            period = parseFloat(q.get("period"));
+        } else {
+            period = Math.max(...compositeRhythm)+4;
+        }
+        let melody;
+        if(q.has("melody")){
+            melody = q.get("melody").split(";");
+            for(i=0;i<melody.length;i++){
+                melody[i] = melody[i].split(",").map(Number);
+            }
+        } else {
+            let subarrayLength = rhythm[0].length;
+            let elementPermutation = randomPermutation(subarrayLength);
+            melody = rhythm.map(subarray => applyPermutation(subarray, elementPermutation));
+            let mainArrayLength = melody.length;
+            let mainPermutation = randomPermutation(mainArrayLength);
+            melody = applyPermutation(melody, mainPermutation);
+        }
+        function applyPermutation(array, permutation) {
+            return permutation.map(index => array[index]);
+        }
+        function randomPermutation(n) {
+            let array = Array.from({length: n}, (_, i) => i);
+            for (let i = n - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        console.table(rhythm);
+        let periodCount = 0
+        function playButton(){
+            document.getElementById('playButton').blur(); 
+            
+            if(currentlyPlaying==false){
+                currentlyPlaying = true; 
+                periodCount = -1;
+                currentBeat = -4;
+                playNote(440,null);
+            } else {
+                currentlyPlaying=false;
+            }
+        }
+
+        function drawEverything(){
+
+            let pixPerBeat = 20;
+            let pixPerCol = 70;
+
+            canvas.height=pixPerBeat*(8+rhythmMax);
+            canvas.width = pixPerCol*(rhythm.length+3);// window.innerWidth*.95
+
+            prevTime=currentTime;
+            currentTime = Date.now();
+            
+            if(currentlyPlaying==true){
+                prevBeat=currentBeat;
+                currentBeat+=(currentTime-prevTime)/60000*myParseInt(document.getElementById("tempo").value,20,120,2000);
+                if(currentBeat>period){
+                    currentBeat =currentBeat - period;
+                    periodCount+=1;
+                }
+            }
+            c.clearRect(0,0,canvas.width,canvas.height);
+            for(let shift = -1;shift<2;shift++){
+                for(let i=0;i<rhythm.length;i++){
+                    for(let j=0;j<rhythm[i].length;j++){
+                        c.textBaseline = 'middle';
+                        c.textAlign='center';
+                        c.font = '12px Arial';
+                        c.fillStyle = 'black';
+                        //c.fillText(rhythm[i][j]+period*shift,pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
+                        c.fillText((rhythm[i][j]+period*shift).toFixed(1),pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
+                        c.fillText(melody[i][j],pixPerCol*1.5,pixPerBeat*(4+rhythm[i][j]+shift*period));
+                        
+                        c.beginPath();
+                        c.moveTo(pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
+                        c.lineTo(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][j]+shift*period));
+                        c.globalAlpha = .25;
+                        c.strokeStyle=colors[i];
+                        c.stroke();
+                        c.globalAlpha = 1;
+                    }
+
+
+                    c.beginPath();
+                    c.strokeStyle = colors[i];
+                    c.moveTo(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][0]+shift*period));
+                    c.lineTo(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][rhythm[i].length-1]+shift*period));
+                    c.stroke();
+
+                    
+                    for(let j=0;j<rhythm[i].length;j++){
+                        c.beginPath();
+                        c.arc(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][j]+shift*period), 5, 0, 2 * Math.PI,false);
+                        c.strokeStyle = colors[i];
+                        c.fillStyle = 'white';
+                        c.fill();   
+                        c.stroke(); 
+                        c.beginPath();
+                        c.arc(pixPerCol*2,pixPerBeat*(4+rhythm[i][j]+shift*period), 5, 0, 2 * Math.PI,false);
+                        c.strokeStyle = 'black';
+                        c.fillStyle = 'white';
+                        c.fill();   
+                        c.stroke(); 
+                    }
+                    
+
+                }
+            }
+            if(currentlyPlaying==true){
+                for(let i = -1;i<2;i++){
+                    let y=pixPerBeat*(currentBeat+i*period+4);
+                    for(let p=0;p<rhythm.length;p++){
+                        c.beginPath();
+                        let x = pixPerCol*(3+p+1*bounceFunction(currentBeat,p));
+                        c.arc(x,y, 5, 0, 2 * Math.PI,false);
+                        c.fillStyle = colors[p];
+                        c.fill();   
+                    }
+                    c.beginPath();
+                    let x = pixPerCol*(2+1*bounceFunction(currentBeat));
+                    c.arc(x,y, 5, 0, 2 * Math.PI,false);
+                    c.fillStyle = 'black';
+                    c.fill(); 
+                }
+                
+
+            }
+
+
+
+            
+
+            
+
+            if(currentBeat>-.5){
+                for(let i=0;i<rhythm.length;i++){
+                    for(let j=0;j<rhythm[i].length;j++){
+                        if(myMod(currentBeat-prevBeat,period)<1){
+                            if(myMod(currentBeat-rhythm[i][j],period)<myMod(prevBeat-rhythm[i][j],period)){
+                                let f;
+                                if(i==0){
+                                    f=220*2**(melody[i][j]/12-expandModeContour(currentBeat/period));
+                                } else if(i==1){
+                                    f=220*2**(melody[i][j]/12);
+                                } else {
+                                    f=220*2**(melody[i][j]/12+expandModeContour(currentBeat/period));
+                                }
+                                playNote(f,ins);
+                            }
+                        }
+                    }
+                }
+            }
+            
+
+            
+        }
+
+        function expandModeContour(){
+            periodCount = periodCount % 50;
+            if(periodCount<5){
+                return 0;
+            } else if(periodCount<25) {
+                return (periodCount-5)/20*2;
+            } else if(periodCount<30){
+                return 2;
+            } else {
+                return (50-periodCount)/20*2;
+            }
+        }
+        function myMod(x,n){
+            return ((x % n) + n) % n
+        }
+        function modDist(from,to,n,direction=0){
+            if(direction==1){
+                return myMod(to-from,n)
+            } else if (direction==-1){
+                return myMod(from-to,n)
+            } else {
+                return Math.min(myMod(to-from,n),myMod(from-to,n))
+            }
+        }
+        function bounceFunction(currentBeat,part=-1){
+            let a=999; // distance to previous
+            let b=999; // distance to next
+            let bounce;
+            if(part==-1){
+                for(let i=0;i<compositeRhythm.length;i++){
+                    a=Math.min(a,modDist(currentBeat,compositeRhythm[i],period,-1));
+                    b=Math.min(b,modDist(currentBeat,compositeRhythm[i],period,1));
+                    //console.log(currentBeat);
+                    //console.log(compositeRhythm[i]);
+                    //console.log(modDist(currentBeat,compositeRhythm[i],period,-1),modDist(currentBeat,compositeRhythm[i],period,1))
+                }
+                //console.log(a,b);
+            } else {
+                for(let i=0;i<rhythm[part].length;i++){
+                    a=Math.min(a,modDist(currentBeat,rhythm[part][i],period,-1));
+                    b=Math.min(b,modDist(currentBeat,rhythm[part][i],period,1));
+                }
+            }
+            if(a+b>4){
+                if(a<2){
+                    bounce=a*(4-a)/4;
+                } else if(b<2){
+                    bounce=b*(4-b)/4;
+                } else {
+                    bounce=1;
+                }
+            } else {
+                bounce = 4*a*b/(a+b)**2
+                console.log(bounce);
+            }
+            return .75*Math.min(a+b,4)/4*bounce;
+        }
+
+
+        function animationLoop(){
+            if(!document.hasFocus()){currentlyPlaying=false}
+            drawEverything();
+            window.requestAnimationFrame(animationLoop);
+        }
+        animationLoop();
+        function myParseInt(s,defaultVal,minVal=-99999,maxVal=99999){
+            if(isNaN(s)){
+                return defaultVal;
+            } else {
+                const n=parseInt(s);
+                if(n<=maxVal &&  n>=minVal){
+                    return n
+                } else {
+                    return defaultVal;
+                }
+            }
+        }
+        
+        currentBeat=0;
+        drawEverything();
+    </script>
+    
+</body>
+
