@@ -95,6 +95,7 @@
             }
             return array;
         }
+
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         console.table(rhythm);
         let periodCount = 0
@@ -113,11 +114,8 @@
 
         function drawEverything(){
 
-            let pixPerBeat = 20;
-            let pixPerCol = 70;
-
-            canvas.height=pixPerBeat*(8+rhythmMax);
-            canvas.width = pixPerCol*(rhythm.length+3);// window.innerWidth*.95
+            canvas.height=300;
+            canvas.width =300;
 
             prevTime=currentTime;
             currentTime = Date.now();
@@ -131,71 +129,91 @@
                 }
             }
             c.clearRect(0,0,canvas.width,canvas.height);
-            for(let shift = -1;shift<2;shift++){
-                for(let i=0;i<rhythm.length;i++){
-                    for(let j=0;j<rhythm[i].length;j++){
-                        c.textBaseline = 'middle';
-                        c.textAlign='center';
-                        c.font = '12px Arial';
-                        c.fillStyle = 'black';
-                        //c.fillText(rhythm[i][j]+period*shift,pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
-                        c.fillText((rhythm[i][j]+period*shift).toFixed(1),pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
-                        c.fillText(melody[i][j],pixPerCol*1.5,pixPerBeat*(4+rhythm[i][j]+shift*period));
-                        
-                        c.beginPath();
-                        c.moveTo(pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
-                        c.lineTo(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][j]+shift*period));
-                        c.globalAlpha = .25;
-                        c.strokeStyle=colors[i];
-                        c.stroke();
-                        c.globalAlpha = 1;
-                    }
-
-
-                    c.beginPath();
-                    c.strokeStyle = colors[i];
-                    c.moveTo(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][0]+shift*period));
-                    c.lineTo(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][rhythm[i].length-1]+shift*period));
-                    c.stroke();
-
-                    
-                    for(let j=0;j<rhythm[i].length;j++){
-                        c.beginPath();
-                        c.arc(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][j]+shift*period), 5, 0, 2 * Math.PI,false);
-                        c.strokeStyle = colors[i];
-                        c.fillStyle = 'white';
-                        c.fill();   
-                        c.stroke(); 
-                        c.beginPath();
-                        c.arc(pixPerCol*2,pixPerBeat*(4+rhythm[i][j]+shift*period), 5, 0, 2 * Math.PI,false);
-                        c.strokeStyle = 'black';
-                        c.fillStyle = 'white';
-                        c.fill();   
-                        c.stroke(); 
-                    }
-                    
-
-                }
-            }
-            if(currentlyPlaying==true){
-                for(let i = -1;i<2;i++){
-                    let y=pixPerBeat*(currentBeat+i*period+4);
-                    for(let p=0;p<rhythm.length;p++){
-                        c.beginPath();
-                        let x = pixPerCol*(3+p+1*bounceFunction(currentBeat,p));
-                        c.arc(x,y, 5, 0, 2 * Math.PI,false);
-                        c.fillStyle = colors[p];
-                        c.fill();   
-                    }
-                    c.beginPath();
-                    let x = pixPerCol*(2+1*bounceFunction(currentBeat));
-                    c.arc(x,y, 5, 0, 2 * Math.PI,false);
-                    c.fillStyle = 'black';
-                    c.fill(); 
+            //console.log(rhythm[0])
+            c.beginPath();
+            for(let i=0;i<rhythm[0].length;i++){
+                let x=(rhythm[0][i]-Math.min(...rhythm[0]))/(Math.max(...rhythm[0])-Math.min(...rhythm[0]));
+                let y=(melody[0][i]-Math.min(...melody[0]))/(Math.max(...melody[0])-Math.min(...melody[0]));
+                if(i==0){
+                    c.moveTo(25+x*250,275-y*250);
+                } else {
+                    c.lineTo(25+x*250,275-y*250);
                 }
                 
-
             }
+            c.stroke();
+            for(let i=0;i<rhythm[0].length;i++){
+                let x=(rhythm[0][i]-Math.min(...rhythm[0]))/(Math.max(...rhythm[0])-Math.min(...rhythm[0]));
+                let y=(melody[0][i]-Math.min(...melody[0]))/(Math.max(...melody[0])-Math.min(...melody[0]));
+                c.beginPath();
+                c.arc(25+x*250,275-y*250,9,0,6.28);
+                c.fill();
+            }
+            // for(let shift = -1;shift<2;shift++){
+            //     for(let i=0;i<rhythm.length;i++){
+            //         for(let j=0;j<rhythm[i].length;j++){
+            //             c.textBaseline = 'middle';
+            //             c.textAlign='center';
+            //             c.font = '12px Arial';
+            //             c.fillStyle = 'black';
+            //             //c.fillText(rhythm[i][j]+period*shift,pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
+            //             c.fillText((rhythm[i][j]+period*shift).toFixed(1),pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
+            //             c.fillText(melody[i][j],pixPerCol*1.5,pixPerBeat*(4+rhythm[i][j]+shift*period));
+                        
+            //             c.beginPath();
+            //             c.moveTo(pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
+            //             c.lineTo(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][j]+shift*period));
+            //             c.globalAlpha = .25;
+            //             c.strokeStyle=colors[i];
+            //             c.stroke();
+            //             c.globalAlpha = 1;
+            //         }
+
+
+            //         c.beginPath();
+            //         c.strokeStyle = colors[i];
+            //         c.moveTo(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][0]+shift*period));
+            //         c.lineTo(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][rhythm[i].length-1]+shift*period));
+            //         c.stroke();
+
+                    
+            //         for(let j=0;j<rhythm[i].length;j++){
+            //             c.beginPath();
+            //             c.arc(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][j]+shift*period), 5, 0, 2 * Math.PI,false);
+            //             c.strokeStyle = colors[i];
+            //             c.fillStyle = 'white';
+            //             c.fill();   
+            //             c.stroke(); 
+            //             c.beginPath();
+            //             c.arc(pixPerCol*2,pixPerBeat*(4+rhythm[i][j]+shift*period), 5, 0, 2 * Math.PI,false);
+            //             c.strokeStyle = 'black';
+            //             c.fillStyle = 'white';
+            //             c.fill();   
+            //             c.stroke(); 
+            //         }
+                    
+
+            //     }
+            // }
+            // if(currentlyPlaying==true){
+            //     for(let i = -1;i<2;i++){
+            //         let y=pixPerBeat*(currentBeat+i*period+4);
+            //         for(let p=0;p<rhythm.length;p++){
+            //             c.beginPath();
+            //             let x = pixPerCol*(3+p+1*bounceFunction(currentBeat,p));
+            //             c.arc(x,y, 5, 0, 2 * Math.PI,false);
+            //             c.fillStyle = colors[p];
+            //             c.fill();   
+            //         }
+            //         c.beginPath();
+            //         let x = pixPerCol*(2+1*bounceFunction(currentBeat));
+            //         c.arc(x,y, 5, 0, 2 * Math.PI,false);
+            //         c.fillStyle = 'black';
+            //         c.fill(); 
+            //     }
+                
+
+            // }
 
 
 

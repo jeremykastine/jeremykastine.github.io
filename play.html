@@ -31,7 +31,7 @@
         <label for="part2" id="part2label">Part 2</label><input type="checkbox" id="part2"> 
         <label for="part3" id="part3label">Part 3</label><input type="checkbox" id="part3"> 
         <label for="part4" id="part4label">Part 4</label><input type="checkbox" id="part4"> 
-        
+        <label for="part5" id="part5label">Part 5</label><input type="checkbox" id="part5"> 
         <br>
         <canvas id="myCanvas" style="border: 3px solid black"></canvas>
   
@@ -43,6 +43,7 @@
 
     
     <script>
+
         const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
         const noteNames = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"];
 
@@ -66,11 +67,8 @@
         }
         
         let compositeRhythm = rhythm.reduce((acc, curr) => acc.concat(curr), []);
-        //let uniqueElements = new Set(flatArray);
         compositeRhythm.sort((a, b) => a - b);
-        //let rhythmMax = Math.max(...rhythm.flatMap(innerArray => innerArray));
         rhythmMax = Math.max(...compositeRhythm);
-        console.log(compositeRhythm, rhythmMax);
 
         let period;
         if(q.has("period")){
@@ -89,61 +87,81 @@
         }
 
         
-        // for(i=0;i<3;i++){
-        //     if(i<rhythm.length){
-        //         document.getElementById("part" + (i+1)).style.display = "inline";
-        //         document.getElementById("part" + (i+1)).checked = false;
-        //         document.getElementById("part" + (i+1)).disabled = true;
-        //         document.getElementById("part" + (i+1) +"label").style.display = "inline";
-        //     } else {
-        //         document.getElementById("part" + (i+1)).style.display = "none";
-        //         document.getElementById("part" + (i+1) +"label").style.display = "none";
-        //     }
-        // }
+        for(i=0;i<5;i++){
+            if(i<rhythm.length){
+                document.getElementById("part" + (i+1)).style.display = "inline";
+                document.getElementById("part" + (i+1)).checked = false;
+                document.getElementById("part" + (i+1) +"label").style.display = "inline";
+            } else {
+                document.getElementById("part" + (i+1)).style.display = "none";
+                document.getElementById("part" + (i+1) +"label").style.display = "none";
+            }
+        }
 
 
 
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        console.table(rhythm);
+
         function playButton(){
             document.getElementById('playButton').blur(); 
             
             if(currentlyPlaying==false){
-                // for(i=0;i<3;i++){
-                //     document.getElementById("part" + (i+1)).checked = false;
-                //     document.getElementById("part" + (i+1)).disabled = false;
-                // }
                 currentlyPlaying = true; 
-
+                currentBeat = -4;
+                prevTime = Date.now();
+                currentTime = Date.now();
                 playNote(440,null);
             } else {
-                // for(i=0;i<3;i++){
-                //     document.getElementById("part" + (i+1)).checked = false;
-                //     document.getElementById("part" + (i+1)).disabled = true;
-                // }
                 currentlyPlaying=false;
             }
         }
 
         function drawEverything(){
-
-            let pixPerBeat = 20;
-            let pixPerCol = 70;
-
-            canvas.height=pixPerBeat*(8+rhythmMax);
-            canvas.width = pixPerCol*(rhythm.length+3);// window.innerWidth*.95
-
-            prevTime=currentTime;
-            currentTime = Date.now();
-            
             if(currentlyPlaying==true){
+                prevTime=currentTime;
+                currentTime = Date.now();
                 prevBeat=currentBeat;
                 currentBeat+=(currentTime-prevTime)/60000*myParseInt(document.getElementById("tempo").value,20,120,2000);
                 if(currentBeat>period){
                     currentBeat =currentBeat - period;
                 }
+                if(currentBeat>-.5){
+                    for(let i=0;i<rhythm.length;i++){
+                        for(let j=0;j<rhythm[i].length;j++){
+                            if(myMod(currentBeat-prevBeat,period)<1){
+                                if(myMod(currentBeat-rhythm[i][j],period)<myMod(prevBeat-rhythm[i][j],period)){
+                                    let f;
+                                    if(document.getElementById("part"+(i+1)).checked){
+                                        f=110*2**(melody[i][j]/12);
+                                        playNote(f,ins);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
             }
             c.clearRect(0,0,canvas.width,canvas.height);
+
+            let portrait;
+            let pixPerBeat;
+            let pixPerPart;
+            if(window.innerWidth<window.innerHeight){
+                portrait=true;
+                pixPerBeat = 20;
+                pixPerPart = 70;
+                canvas.height=pixPerBeat*(8+rhythmMax);
+                canvas.width = pixPerPart*(rhythm.length+3);// window.innerWidth*.95
+            } else {
+                portrait=false;
+                pixPerBeat = 30;
+                pixPerPart = 50;
+                canvas.height=pixPerPart*(rhythm.length+3);
+                canvas.width =pixPerBeat*(8+rhythmMax) ;// window.innerWidth*.95
+            }
+
+            
             for(let shift = -1;shift<2;shift++){
                 for(let i=0;i<rhythm.length;i++){
                     for(let j=0;j<rhythm[i].length;j++){
@@ -151,13 +169,23 @@
                         c.textAlign='center';
                         c.font = '12px Arial';
                         c.fillStyle = 'black';
-                        //c.fillText(rhythm[i][j]+period*shift,pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
-                        c.fillText((rhythm[i][j]+period*shift).toFixed(1),pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
-                        c.fillText(melody[i][j],pixPerCol*1.5,pixPerBeat*(4+rhythm[i][j]+shift*period));
+                        if(portrait){
+                            c.fillText((rhythm[i][j]+period*shift).toFixed(1),pixPerPart,pixPerBeat*(4+rhythm[i][j]+shift*period));
+                            c.fillText(melody[i][j],pixPerPart*1.5,pixPerBeat*(4+rhythm[i][j]+shift*period));
+                        } else {
+                            c.fillText((rhythm[i][j]+period*shift).toFixed(1),pixPerBeat*(4+rhythm[i][j]+shift*period),pixPerPart);
+                            c.fillText(melody[i][j],pixPerBeat*(4+rhythm[i][j]+shift*period),pixPerPart*1.5);
+                        }
+                        
                         
                         c.beginPath();
-                        c.moveTo(pixPerCol,pixPerBeat*(4+rhythm[i][j]+shift*period));
-                        c.lineTo(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][j]+shift*period));
+                        if(portrait){
+                            c.moveTo(pixPerPart,pixPerBeat*(4+rhythm[i][j]+shift*period));
+                            c.lineTo(pixPerPart*(3+i),pixPerBeat*(4+rhythm[i][j]+shift*period));
+                        } else {
+                            c.moveTo(pixPerBeat*(4+rhythm[i][j]+shift*period),pixPerPart);
+                            c.lineTo(pixPerBeat*(4+rhythm[i][j]+shift*period),pixPerPart*(3+i));
+                        }
                         c.globalAlpha = .25;
                         c.strokeStyle=colors[i];
                         c.stroke();
@@ -167,20 +195,35 @@
 
                     c.beginPath();
                     c.strokeStyle = colors[i];
-                    c.moveTo(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][0]+shift*period));
-                    c.lineTo(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][rhythm[i].length-1]+shift*period));
+                    if(portrait){
+                        c.moveTo(pixPerPart*(3+i),pixPerBeat*(4+rhythm[i][0]+shift*period));
+                        c.lineTo(pixPerPart*(3+i),pixPerBeat*(4+rhythm[i][rhythm[i].length-1]+shift*period));
+                    } else {
+                        c.moveTo(pixPerBeat*(4+rhythm[i][0]+shift*period),pixPerPart*(3+i));
+                        c.lineTo(pixPerBeat*(4+rhythm[i][rhythm[i].length-1]+shift*period),pixPerPart*(3+i));
+                    }
                     c.stroke();
 
                     
                     for(let j=0;j<rhythm[i].length;j++){
                         c.beginPath();
-                        c.arc(pixPerCol*(3+i),pixPerBeat*(4+rhythm[i][j]+shift*period), 5, 0, 2 * Math.PI,false);
+                        if(portrait){
+                            c.arc(pixPerPart*(3+i),pixPerBeat*(4+rhythm[i][j]+shift*period), 5, 0, 2 * Math.PI,false);
+                        } else {
+                            c.arc(pixPerBeat*(4+rhythm[i][j]+shift*period),pixPerPart*(3+i), 5, 0, 2 * Math.PI,false);
+                        }
+                        
                         c.strokeStyle = colors[i];
                         c.fillStyle = 'white';
                         c.fill();   
                         c.stroke(); 
                         c.beginPath();
-                        c.arc(pixPerCol*2,pixPerBeat*(4+rhythm[i][j]+shift*period), 5, 0, 2 * Math.PI,false);
+                        if(portrait){
+                            c.arc(pixPerPart*2,pixPerBeat*(4+rhythm[i][j]+shift*period), 5, 0, 2 * Math.PI,false);
+                        } else {
+                            c.arc(pixPerBeat*(4+rhythm[i][j]+shift*period),pixPerPart*2, 5, 0, 2 * Math.PI,false);
+                        }
+                        
                         c.strokeStyle = 'black';
                         c.fillStyle = 'white';
                         c.fill();   
@@ -195,44 +238,32 @@
                     let y=pixPerBeat*(currentBeat+i*period+4);
                     for(let p=0;p<rhythm.length;p++){
                         c.beginPath();
-                        let x = pixPerCol*(3+p+1*bounceFunction(currentBeat,p));
-                        c.arc(x,y, 5, 0, 2 * Math.PI,false);
+                        
+                        if(portrait){
+                            let x = pixPerPart*(3+p+1*bounceFunction(currentBeat,p));
+                            c.arc(x,y, 5, 0, 2 * Math.PI,false);
+                        } else {
+                            let x = pixPerPart*(3+p-1*bounceFunction(currentBeat,p));
+                            c.arc(y,x, 5, 0, 2 * Math.PI,false);
+                        }
                         c.fillStyle = colors[p];
                         c.fill();   
                     }
                     c.beginPath();
-                    let x = pixPerCol*(2+1*bounceFunction(currentBeat));
-                    c.arc(x,y, 5, 0, 2 * Math.PI,false);
+                    
+                    if(portrait){
+                        let x = pixPerPart*(2+1*bounceFunction(currentBeat));
+                        c.arc(x,y, 5, 0, 2 * Math.PI,false);
+                    } else {
+                        let x = pixPerPart*(2-1*bounceFunction(currentBeat));
+                        c.arc(y,x, 5, 0, 2 * Math.PI,false);
+                    }
                     c.fillStyle = 'black';
                     c.fill(); 
                 }
-                
-
             }
-
-
-
-            
-
-            
-
-
-            for(let i=0;i<rhythm.length;i++){
-                for(let j=0;j<rhythm[i].length;j++){
-                    if(myMod(currentBeat-prevBeat,period)<1){
-                        if(myMod(currentBeat-rhythm[i][j],period)<myMod(prevBeat-rhythm[i][j],period)){
-                            let f;
-                            if(document.getElementById("part"+(i+1)).checked){
-                                f=110*2**(melody[i][j]/12);
-                                playNote(f,ins);
-                            }
-                        }
-                    }
-                }
-            }
-
-            
         }
+
         function myMod(x,n){
             return ((x % n) + n) % n
         }
@@ -253,11 +284,7 @@
                 for(let i=0;i<compositeRhythm.length;i++){
                     a=Math.min(a,modDist(currentBeat,compositeRhythm[i],period,-1));
                     b=Math.min(b,modDist(currentBeat,compositeRhythm[i],period,1));
-                    //console.log(currentBeat);
-                    //console.log(compositeRhythm[i]);
-                    //console.log(modDist(currentBeat,compositeRhythm[i],period,-1),modDist(currentBeat,compositeRhythm[i],period,1))
                 }
-                //console.log(a,b);
             } else {
                 for(let i=0;i<rhythm[part].length;i++){
                     a=Math.min(a,modDist(currentBeat,rhythm[part][i],period,-1));
@@ -274,7 +301,6 @@
                 }
             } else {
                 bounce = 4*a*b/(a+b)**2
-                console.log(bounce);
             }
             return .75*Math.min(a+b,4)/4*bounce;
         }

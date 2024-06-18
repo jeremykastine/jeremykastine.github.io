@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Augmentation Canon Puzzle</title>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    canvas {
+        display: block;
+        background-color: #f0f0f0;
+    }
+
+    #slider {
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+    }
+</style>
+</head>
+<body>
+    <div id="text-box">Score <span id="pearson"></span></div>
+    <canvas id="myCanvas"></canvas>
+    <input type="range" id="slider" min="0.01" max=".99" value=".2" step=".01" oninput="update()">
+
+    <script>
+        
+
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const levelParam = urlParams.get('level');
+
+        let level = JSON.parse(levelParam);
+        let numParts = Math.max(...level)+1;
+        let parts = Array.from({ length: numParts }, () => []);
+        for(let i=0;i<level.length;i++){
+            parts[level[i]].push(i);
+        }
+        console.log(parts);
+
+        let compositeRhythm=[];
+        for(let i = 0;i<level.length;i++){
+            compositeRhythm.push(i/(level.length-1));
+        }
+        let selected = Math.round(compositeRhythm.length/2);
+        let selectedType="note";
+        document.getElementById("slider").value = (compositeRhythm[selected]-compositeRhythm[selected-1])/(compositeRhythm[selected+1]-compositeRhythm[selected-1]);
+        document.getElementById("slider").focus();
+
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        let slider = document.getElementById('slider');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - slider.offsetHeight;
+            if(window.innerWidth<window.innerHeight){
+                portrait=true;
+            } else {
+                portrait=false;
+            }
+        }
+        function update(){
+            if(selectedType=="gap"){
+                let adjustedGap = document.getElementById("slider").value**(Math.log2(compositeRhythm.length));
+                let factor = (1-adjustedGap)/(1-compositeRhythm[selected+1]+compositeRhythm[selected]);
+                for(let i=1;i<=selected;i++){
+                    compositeRhythm[i] = compositeRhythm[i] * factor;
+                }
+                for(let i=selected+1;i<compositeRhythm.length;i++){
+                    compositeRhythm[i] = 1-(1-compositeRhythm[i]) * factor;
+                }
+            } else {
+                compositeRhythm[selected]= compositeRhythm[selected-1]+(compositeRhythm[selected+1]-compositeRhythm[selected-1])*document.getElementById("slider").value
+            }
+            drawCanvas();
+        }
+        let topMargin;
+        let usableHeight;
+        let portrait;
+        function drawCanvas() {
+            topMargin = 30;
+            let x=[50,150,200,300,400];
+            usableHeight = canvas.height-2*topMargin;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for(let i=0;i<compositeRhythm.length;i++){
+                ctx.beginPath();
+                if(portrait==true){
+                    ctx.moveTo(x[1],topMargin+compositeRhythm[i]*usableHeight);
+                    ctx.lineTo(x[2],topMargin+compositeRhythm[i]*usableHeight);
+                    ctx.lineTo(x[3],topMargin+i*usableHeight/(compositeRhythm.length-1));
+                    ctx.lineTo(x[4],topMargin+i*usableHeight/(compositeRhythm.length-1));
+                } else {
+                    ctx.moveTo(topMargin+compositeRhythm[i]*usableHeight,x[1]);
+                    ctx.lineTo(topMargin+compositeRhythm[i]*usableHeight,x[2]);
+                    ctx.lineTo(topMargin+i*usableHeight/(compositeRhythm.length-1),x[3]);
+                    ctx.lineTo(topMargin+i*usableHeight/(compositeRhythm.length-1),x[4]);
+                }
+                ctx.strokeStyle="black"
+                ctx.stroke();
+                if(i>0){
+                    ctx.beginPath();
+                    if(portrait==true){
+                        ctx.moveTo(x[0],topMargin+compositeRhythm[i-1]*usableHeight);
+                        ctx.lineTo(x[2],topMargin+compositeRhythm[i-1]*usableHeight);
+                        ctx.lineTo(x[3],topMargin+(i-1)*usableHeight/(compositeRhythm.length-1));
+                        ctx.lineTo(x[4],topMargin+(i-1)*usableHeight/(compositeRhythm.length-1));
+                        ctx.lineTo(x[4],topMargin+i*usableHeight/(compositeRhythm.length-1));
+                        ctx.lineTo(x[3],topMargin+i*usableHeight/(compositeRhythm.length-1));
+                        ctx.lineTo(x[2],topMargin+compositeRhythm[i]*usableHeight);
+                        ctx.lineTo(x[0],topMargin+compositeRhythm[i]*usableHeight);
+                    } else {
+                        ctx.moveTo(topMargin+compositeRhythm[i-1]*usableHeight,x[0]);
+                        ctx.lineTo(topMargin+compositeRhythm[i-1]*usableHeight,x[2]);
+                        ctx.lineTo(topMargin+(i-1)*usableHeight/(compositeRhythm.length-1),x[3]);
+                        ctx.lineTo(topMargin+(i-1)*usableHeight/(compositeRhythm.length-1),x[4]);
+                        ctx.lineTo(topMargin+i*usableHeight/(compositeRhythm.length-1),x[4]);
+                        ctx.lineTo(topMargin+i*usableHeight/(compositeRhythm.length-1),x[3]);
+                        ctx.lineTo(topMargin+compositeRhythm[i]*usableHeight,x[2]);
+                        ctx.lineTo(topMargin+compositeRhythm[i]*usableHeight,x[0]);
+                    }
+                    ctx.closePath();
+                    if(i % 2 == 0){
+                        ctx.fillStyle="red";
+                    }  else {
+                        ctx.fillStyle="blue";
+                    }
+                    ctx.globalAlpha=.2;
+                    ctx.fill();
+                    ctx.globalAlpha=1;
+                }
+                
+            }
+            for(let i=0;i<parts.length;i++){
+                ctx.beginPath();
+                if(portrait==true){
+                    ctx.moveTo(x[0]+(x[1]-x[0])/(parts.length+1)*(i+1),topMargin+usableHeight*compositeRhythm[parts[i][0]]);
+                    ctx.lineTo(x[0]+(x[1]-x[0])/(parts.length+1)*(i+1),topMargin+usableHeight*compositeRhythm[parts[i][parts[i].length-1]]);
+                } else {
+                    ctx.moveTo(topMargin+usableHeight*compositeRhythm[parts[i][0]],x[0]+(x[1]-x[0])/(parts.length+1)*(i+1));
+                    ctx.lineTo(topMargin+usableHeight*compositeRhythm[parts[i][parts[i].length-1]],x[0]+(x[1]-x[0])/(parts.length+1)*(i+1));
+                }
+                
+                ctx.strokeStyle="black";
+                ctx.stroke();
+                for(let j=0;j<parts[i].length;j++){
+                    ctx.beginPath();
+                    if(portrait==true){
+                        ctx.arc(x[0]+(x[1]-x[0])/(parts.length+1)*(i+1),topMargin+usableHeight*compositeRhythm[parts[i][j]],5,0,6.28);
+                    } else {
+                        ctx.arc(topMargin+usableHeight*compositeRhythm[parts[i][j]],x[0]+(x[1]-x[0])/(parts.length+1)*(i+1),5,0,6.28);
+                    }
+                    ctx.fillStyle = "black";
+                    ctx.fill();
+                }
+            }
+            ctx.beginPath();
+            if(selectedType=="gap"){
+                if(portrait==true){
+                    ctx.arc((x[3]+x[4])/2,topMargin+usableHeight*(selected+.5)/(compositeRhythm.length-1),10,0,6.28);
+                } else {
+                    ctx.arc(topMargin+usableHeight*(selected+.5)/(compositeRhythm.length-1),(x[3]+x[4])/2,10,0,6.28);
+                }
+                
+            } else {
+                if(portrait==true){
+                    ctx.arc((x[3]+x[4])/2,topMargin+usableHeight*selected/(compositeRhythm.length-1),10,0,6.28);
+                } else {
+                    ctx.arc(topMargin+usableHeight*selected/(compositeRhythm.length-1),(x[3]+x[4])/2,10,0,6.28);
+                }
+                
+            }
+            ctx.fill();
+            //document.getElementById("gap").innerText = minimumGap().toFixed(2);
+            document.getElementById("pearson").innerText = productOfPearsonCorrelations().toFixed(4);
+        }
+        function minimumGap(){
+            let m=1;
+            for(let i=0;i<compositeRhythm.length-1;i++){
+                let g=compositeRhythm[i+1]-compositeRhythm[i];
+                if(g<m){m=g}
+            }
+            return m;
+        }
+        function handleClick(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            if(portrait==true){
+                selected= Math.round(2*(y-topMargin)/usableHeight*(compositeRhythm.length-1));
+            } else {
+                selected= Math.round(2*(x-topMargin)/usableHeight*(compositeRhythm.length-1));
+            }
+            
+            if(selected==0 || selected==2*(compositeRhythm.length-1)){return}
+            if(selected % 2 ==0){
+                selected = selected/2;
+                selectedType = "note";
+                document.getElementById("slider").value = (compositeRhythm[selected]-compositeRhythm[selected-1])/(compositeRhythm[selected+1]-compositeRhythm[selected-1]);
+            } else {
+                selected = (selected-1)/2;
+                selectedType = "gap";
+                document.getElementById("slider").value = (compositeRhythm[selected+1]-compositeRhythm[selected])**(1/Math.log2(compositeRhythm.length));
+            }
+            document.getElementById("slider").focus();
+            drawCanvas();
+        }
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            drawCanvas();
+        });
+
+        canvas.addEventListener('click', handleClick);
+
+        resizeCanvas();
+        drawCanvas();
+
+
+
+        function pearsonCorrelation(x, y) {
+            const n = x.length;
+            const meanX = x.reduce((sum, val) => sum + val, 0) / n;
+            const meanY = y.reduce((sum, val) => sum + val, 0) / n;
+            
+            let numerator = 0;
+            let denominatorX = 0;
+            let denominatorY = 0;
+            
+            for (let i = 0; i < n; i++) {
+                const dx = x[i] - meanX;
+                const dy = y[i] - meanY;
+                numerator += dx * dy;
+                denominatorX += dx * dx;
+                denominatorY += dy * dy;
+            }
+            console.log(x,meanX,numerator,Math.sqrt(denominatorX * denominatorY));
+            return numerator / Math.sqrt(denominatorX * denominatorY);
+        }
+
+
+        function productOfPearsonCorrelations() {
+            const n = parts.length;
+            let product = 1;
+            for (let i = 0; i < n; i++) {
+                let array1 = [...parts[i]];
+                for(let k=0;k<array1.length;k++){
+                    array1[k]=compositeRhythm[array1[k]];
+                }
+                for (let j = i + 1; j < n; j++) {
+                    let array2 = [...parts[j]];
+                    for(let k=0;k<array2.length;k++){
+                        array2[k]=compositeRhythm[array2[k]];
+                    }
+                    const correlation = pearsonCorrelation(array1, array2);
+                    product *= correlation;
+                }
+            }
+            return product;
+        }
+    </script>
+</body>
+</html>
