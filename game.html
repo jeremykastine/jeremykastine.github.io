@@ -19,13 +19,14 @@
 
     #slider {
         width: 100%;
+        height:10%;
         position: fixed;
         bottom: 0;
     }
 </style>
 </head>
 <body>
-    <div id="text-box">Score <span id="pearson"></span></div>
+    <div id="text-box" style="font-size: 20px;">Score <span id="pearson"></span></div>
     <canvas id="myCanvas"></canvas>
     <input type="range" id="slider" min="0.01" max=".99" value=".2" step=".01" oninput="update()">
 
@@ -57,12 +58,14 @@
         let slider = document.getElementById('slider');
 
         function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - slider.offsetHeight;
             if(window.innerWidth<window.innerHeight){
                 portrait=true;
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight - slider.offsetHeight - document.getElementById("text-box").offsetHeight;
             } else {
                 portrait=false;
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight - slider.offsetHeight - document.getElementById("text-box").offsetHeight;
             }
         }
         function update(){
@@ -80,49 +83,59 @@
             }
             drawCanvas();
         }
-        let topMargin;
+        let margin;
         let usableHeight;
         let portrait;
         function drawCanvas() {
-            topMargin = 30;
-            let x=[50,150,200,300,400];
-            usableHeight = canvas.height-2*topMargin;
+            margin = 30;
+            let xTotal;
+            
+            if(portrait==true){
+                xTotal = canvas.width-2*margin;
+                usableHeight = canvas.height-2*margin;
+            } else {
+                xTotal = canvas.height-2*margin;
+                usableHeight = canvas.width-2*margin;
+            }
+            let x=[margin,margin+.5*xTotal,margin+.55*xTotal,margin+.75*xTotal,margin+xTotal]
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for(let i=0;i<compositeRhythm.length;i++){
                 ctx.beginPath();
+                ctx.lineWidth = 1;
                 if(portrait==true){
-                    ctx.moveTo(x[1],topMargin+compositeRhythm[i]*usableHeight);
-                    ctx.lineTo(x[2],topMargin+compositeRhythm[i]*usableHeight);
-                    ctx.lineTo(x[3],topMargin+i*usableHeight/(compositeRhythm.length-1));
-                    ctx.lineTo(x[4],topMargin+i*usableHeight/(compositeRhythm.length-1));
+                    ctx.moveTo(x[1],margin+compositeRhythm[i]*usableHeight);
+                    ctx.lineTo(x[2],margin+compositeRhythm[i]*usableHeight);
+                    ctx.lineTo(x[3],margin+i*usableHeight/(compositeRhythm.length-1));
+                    ctx.lineTo(x[4],margin+i*usableHeight/(compositeRhythm.length-1));
                 } else {
-                    ctx.moveTo(topMargin+compositeRhythm[i]*usableHeight,x[1]);
-                    ctx.lineTo(topMargin+compositeRhythm[i]*usableHeight,x[2]);
-                    ctx.lineTo(topMargin+i*usableHeight/(compositeRhythm.length-1),x[3]);
-                    ctx.lineTo(topMargin+i*usableHeight/(compositeRhythm.length-1),x[4]);
+                    ctx.moveTo(margin+compositeRhythm[i]*usableHeight,x[1]);
+                    ctx.lineTo(margin+compositeRhythm[i]*usableHeight,x[2]);
+                    ctx.lineTo(margin+i*usableHeight/(compositeRhythm.length-1),x[3]);
+                    ctx.lineTo(margin+i*usableHeight/(compositeRhythm.length-1),x[4]);
                 }
                 ctx.strokeStyle="black"
                 ctx.stroke();
                 if(i>0){
                     ctx.beginPath();
                     if(portrait==true){
-                        ctx.moveTo(x[0],topMargin+compositeRhythm[i-1]*usableHeight);
-                        ctx.lineTo(x[2],topMargin+compositeRhythm[i-1]*usableHeight);
-                        ctx.lineTo(x[3],topMargin+(i-1)*usableHeight/(compositeRhythm.length-1));
-                        ctx.lineTo(x[4],topMargin+(i-1)*usableHeight/(compositeRhythm.length-1));
-                        ctx.lineTo(x[4],topMargin+i*usableHeight/(compositeRhythm.length-1));
-                        ctx.lineTo(x[3],topMargin+i*usableHeight/(compositeRhythm.length-1));
-                        ctx.lineTo(x[2],topMargin+compositeRhythm[i]*usableHeight);
-                        ctx.lineTo(x[0],topMargin+compositeRhythm[i]*usableHeight);
+                        ctx.moveTo(x[0],margin+compositeRhythm[i-1]*usableHeight);
+                        ctx.lineTo(x[2],margin+compositeRhythm[i-1]*usableHeight);
+                        ctx.lineTo(x[3],margin+(i-1)*usableHeight/(compositeRhythm.length-1));
+                        ctx.lineTo(x[4],margin+(i-1)*usableHeight/(compositeRhythm.length-1));
+                        ctx.lineTo(x[4],margin+i*usableHeight/(compositeRhythm.length-1));
+                        ctx.lineTo(x[3],margin+i*usableHeight/(compositeRhythm.length-1));
+                        ctx.lineTo(x[2],margin+compositeRhythm[i]*usableHeight);
+                        ctx.lineTo(x[0],margin+compositeRhythm[i]*usableHeight);
                     } else {
-                        ctx.moveTo(topMargin+compositeRhythm[i-1]*usableHeight,x[0]);
-                        ctx.lineTo(topMargin+compositeRhythm[i-1]*usableHeight,x[2]);
-                        ctx.lineTo(topMargin+(i-1)*usableHeight/(compositeRhythm.length-1),x[3]);
-                        ctx.lineTo(topMargin+(i-1)*usableHeight/(compositeRhythm.length-1),x[4]);
-                        ctx.lineTo(topMargin+i*usableHeight/(compositeRhythm.length-1),x[4]);
-                        ctx.lineTo(topMargin+i*usableHeight/(compositeRhythm.length-1),x[3]);
-                        ctx.lineTo(topMargin+compositeRhythm[i]*usableHeight,x[2]);
-                        ctx.lineTo(topMargin+compositeRhythm[i]*usableHeight,x[0]);
+                        ctx.moveTo(margin+compositeRhythm[i-1]*usableHeight,x[0]);
+                        ctx.lineTo(margin+compositeRhythm[i-1]*usableHeight,x[2]);
+                        ctx.lineTo(margin+(i-1)*usableHeight/(compositeRhythm.length-1),x[3]);
+                        ctx.lineTo(margin+(i-1)*usableHeight/(compositeRhythm.length-1),x[4]);
+                        ctx.lineTo(margin+i*usableHeight/(compositeRhythm.length-1),x[4]);
+                        ctx.lineTo(margin+i*usableHeight/(compositeRhythm.length-1),x[3]);
+                        ctx.lineTo(margin+compositeRhythm[i]*usableHeight,x[2]);
+                        ctx.lineTo(margin+compositeRhythm[i]*usableHeight,x[0]);
                     }
                     ctx.closePath();
                     if(i % 2 == 0){
@@ -130,7 +143,7 @@
                     }  else {
                         ctx.fillStyle="blue";
                     }
-                    ctx.globalAlpha=.2;
+                    ctx.globalAlpha=0.15;
                     ctx.fill();
                     ctx.globalAlpha=1;
                 }
@@ -139,21 +152,21 @@
             for(let i=0;i<parts.length;i++){
                 ctx.beginPath();
                 if(portrait==true){
-                    ctx.moveTo(x[0]+(x[1]-x[0])/(parts.length+1)*(i+1),topMargin+usableHeight*compositeRhythm[parts[i][0]]);
-                    ctx.lineTo(x[0]+(x[1]-x[0])/(parts.length+1)*(i+1),topMargin+usableHeight*compositeRhythm[parts[i][parts[i].length-1]]);
+                    ctx.moveTo(x[0]+(x[1]-x[0])/(parts.length)*(i),margin+usableHeight*compositeRhythm[parts[i][0]]);
+                    ctx.lineTo(x[0]+(x[1]-x[0])/(parts.length)*(i),margin+usableHeight*compositeRhythm[parts[i][parts[i].length-1]]);
                 } else {
-                    ctx.moveTo(topMargin+usableHeight*compositeRhythm[parts[i][0]],x[0]+(x[1]-x[0])/(parts.length+1)*(i+1));
-                    ctx.lineTo(topMargin+usableHeight*compositeRhythm[parts[i][parts[i].length-1]],x[0]+(x[1]-x[0])/(parts.length+1)*(i+1));
+                    ctx.moveTo(margin+usableHeight*compositeRhythm[parts[i][0]],x[0]+(x[1]-x[0])/(parts.length)*(i));
+                    ctx.lineTo(margin+usableHeight*compositeRhythm[parts[i][parts[i].length-1]],x[0]+(x[1]-x[0])/(parts.length)*(i));
                 }
-                
+                ctx.lineWidth = 3;
                 ctx.strokeStyle="black";
                 ctx.stroke();
                 for(let j=0;j<parts[i].length;j++){
                     ctx.beginPath();
                     if(portrait==true){
-                        ctx.arc(x[0]+(x[1]-x[0])/(parts.length+1)*(i+1),topMargin+usableHeight*compositeRhythm[parts[i][j]],5,0,6.28);
+                        ctx.arc(x[0]+(x[1]-x[0])/(parts.length)*(i),margin+usableHeight*compositeRhythm[parts[i][j]],10,0,6.28);
                     } else {
-                        ctx.arc(topMargin+usableHeight*compositeRhythm[parts[i][j]],x[0]+(x[1]-x[0])/(parts.length+1)*(i+1),5,0,6.28);
+                        ctx.arc(margin+usableHeight*compositeRhythm[parts[i][j]],x[0]+(x[1]-x[0])/(parts.length)*(i),10,0,6.28);
                     }
                     ctx.fillStyle = "black";
                     ctx.fill();
@@ -162,16 +175,16 @@
             ctx.beginPath();
             if(selectedType=="gap"){
                 if(portrait==true){
-                    ctx.arc((x[3]+x[4])/2,topMargin+usableHeight*(selected+.5)/(compositeRhythm.length-1),10,0,6.28);
+                    ctx.arc((x[3]+x[4])/2,margin+usableHeight*(selected+.5)/(compositeRhythm.length-1),10,0,6.28);
                 } else {
-                    ctx.arc(topMargin+usableHeight*(selected+.5)/(compositeRhythm.length-1),(x[3]+x[4])/2,10,0,6.28);
+                    ctx.arc(margin+usableHeight*(selected+.5)/(compositeRhythm.length-1),(x[3]+x[4])/2,10,0,6.28);
                 }
                 
             } else {
                 if(portrait==true){
-                    ctx.arc((x[3]+x[4])/2,topMargin+usableHeight*selected/(compositeRhythm.length-1),10,0,6.28);
+                    ctx.arc((x[3]+x[4])/2,margin+usableHeight*selected/(compositeRhythm.length-1),10,0,6.28);
                 } else {
-                    ctx.arc(topMargin+usableHeight*selected/(compositeRhythm.length-1),(x[3]+x[4])/2,10,0,6.28);
+                    ctx.arc(margin+usableHeight*selected/(compositeRhythm.length-1),(x[3]+x[4])/2,10,0,6.28);
                 }
                 
             }
@@ -192,12 +205,12 @@
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
             if(portrait==true){
-                selected= Math.round(2*(y-topMargin)/usableHeight*(compositeRhythm.length-1));
+                selected= Math.round(2*(y-margin)/usableHeight*(compositeRhythm.length-1));
             } else {
-                selected= Math.round(2*(x-topMargin)/usableHeight*(compositeRhythm.length-1));
+                selected= Math.round(2*(x-margin)/usableHeight*(compositeRhythm.length-1));
             }
             
-            if(selected==0 || selected==2*(compositeRhythm.length-1)){return}
+            if(selected<=0 || selected>=2*(compositeRhythm.length-1)){return}
             if(selected % 2 ==0){
                 selected = selected/2;
                 selectedType = "note";
@@ -239,7 +252,7 @@
                 denominatorX += dx * dx;
                 denominatorY += dy * dy;
             }
-            console.log(x,meanX,numerator,Math.sqrt(denominatorX * denominatorY));
+            
             return numerator / Math.sqrt(denominatorX * denominatorY);
         }
 
@@ -252,6 +265,7 @@
                 for(let k=0;k<array1.length;k++){
                     array1[k]=compositeRhythm[array1[k]];
                 }
+                console.log(i,array1);
                 for (let j = i + 1; j < n; j++) {
                     let array2 = [...parts[j]];
                     for(let k=0;k<array2.length;k++){
