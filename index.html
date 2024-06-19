@@ -52,9 +52,11 @@
                 }
             }
             G.sort((a, b) => a[0] - b[0]);
-            console.log(G);
             let H=G.map(subArray => subArray[1]);
-            window.location.href = 'game.html?level=' + JSON.stringify(H);
+            console.log(H);
+            let H2 = H.join(",");
+            console.log(H2);
+            window.location.href = 'game.html?level=' + H2;
         }
     </script>
     Listen to some disjoint augmentation canons:<br><br>

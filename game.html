@@ -35,8 +35,7 @@
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const levelParam = urlParams.get('level');
-
-        let level = JSON.parse(levelParam);
+        let level = levelParam.split(",").map(Number);;
         let numParts = Math.max(...level)+1;
         let parts = Array.from({ length: numParts }, () => []);
         for(let i=0;i<level.length;i++){
