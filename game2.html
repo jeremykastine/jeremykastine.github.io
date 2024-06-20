@@ -104,7 +104,7 @@
             
             if(currentlyPlaying==false){
                 currentlyPlaying = true; 
-                periodCount = -1;
+                periodCount = 0;
                 currentBeat = -4;
                 playNote(440,null);
             } else {
@@ -246,15 +246,13 @@
         }
 
         function expandModeContour(){
-            periodCount = periodCount % 50;
-            if(periodCount<5){
+            periodCount = periodCount % 43;
+            if(periodCount<3){
                 return 0;
-            } else if(periodCount<25) {
-                return (periodCount-5)/20*2;
-            } else if(periodCount<30){
-                return 2;
+            } else if(periodCount<23) {
+                return (periodCount-3)/23*2;
             } else {
-                return (50-periodCount)/20*2;
+                return (43-periodCount)/23*2;
             }
         }
         function myMod(x,n){
