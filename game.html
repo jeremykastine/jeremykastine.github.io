@@ -40,7 +40,9 @@
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const levelParam = urlParams.get('level');
-        let level = levelParam.split(",").map(Number);;
+        let level = levelParam.split(",").map(Number);
+        level=level.map(x => x - Math.min(...level));
+        console.log(level);
         let numParts = Math.max(...level)+1;
         let parts = Array.from({ length: numParts }, () => []);
         for(let i=0;i<level.length;i++){
@@ -254,12 +256,12 @@
                 }
                 console.table(errorArray);
             }
-            for (let i = 0; i < parts[0].length-1; i++) {
-                for (let j = 0; j < parts.length; j++) {
-                    errorArray[j][i] = tanh(10*errorArray[j][i]);
-                }
-                console.table(errorArray);
-            }
+            // for (let i = 0; i < parts[0].length-1; i++) {
+            //     for (let j = 0; j < parts.length; j++) {
+            //         errorArray[j][i] = tanh(10*errorArray[j][i]);
+            //     }
+            //     console.table(errorArray);
+            // }
             
             let m=0;
             for(let i = 0;i<compositeRhythm.length-1;i++){
