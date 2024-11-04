@@ -14,25 +14,29 @@
 
     canvas {
         display: block;
-        background-color: #f0f0f0;
+        background-color: white;
+    }
+    body {
+        user-select: none;
     }
 
-    #slider {
-        width: 100%;
-        height:10%;
-        position: fixed;
-        bottom: 0;
-    }
 </style>
 </head>
 <body>
-    <div id="text-box" style="font-size: 20px;">Score <span id="pearson"></span></div>
+    
+    
+    <div id="text-box" style="font-size: 20px;">
+        Score <span id="score"></span><br>
+        <label for="increment-selector">Increment Size:</label>
+        <select id="increment-selector">
+            <option value=0.99>Low</option>
+            <option value=0.95 selected>Medium</option>
+            <option value=0.9>High</option>
+        </select>
+    </div>
     <canvas id="myCanvas"></canvas>
-    <input type="range" id="slider" min="0.01" max=".99" value=".2" step=".01" oninput="update()">
 
     <script>
-        
-
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const levelParam = urlParams.get('level');
@@ -42,100 +46,96 @@
         for(let i=0;i<level.length;i++){
             parts[level[i]].push(i);
         }
-        console.log(parts);
-
+        
         let compositeRhythm=[];
         for(let i = 0;i<level.length;i++){
             compositeRhythm.push(i/(level.length-1));
         }
-        let selected = Math.round(compositeRhythm.length/2);
-        let selectedType="note";
-        document.getElementById("slider").value = (compositeRhythm[selected]-compositeRhythm[selected-1])/(compositeRhythm[selected+1]-compositeRhythm[selected-1]);
-        document.getElementById("slider").focus();
+        let errorArray=[];
+
 
         const canvas = document.getElementById('myCanvas');
         const ctx = canvas.getContext('2d');
-        let slider = document.getElementById('slider');
+
 
         function resizeCanvas() {
             if(window.innerWidth<window.innerHeight){
                 portrait=true;
                 canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight - slider.offsetHeight - document.getElementById("text-box").offsetHeight;
+                canvas.height = window.innerHeight - document.getElementById("text-box").offsetHeight;
             } else {
                 portrait=false;
                 canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight - slider.offsetHeight - document.getElementById("text-box").offsetHeight;
+                canvas.height = window.innerHeight - document.getElementById("text-box").offsetHeight;
             }
         }
-        function update(){
-            if(selectedType=="gap"){
-                let adjustedGap = document.getElementById("slider").value**(Math.log2(compositeRhythm.length));
-                let factor = (1-adjustedGap)/(1-compositeRhythm[selected+1]+compositeRhythm[selected]);
-                for(let i=1;i<=selected;i++){
-                    compositeRhythm[i] = compositeRhythm[i] * factor;
-                }
-                for(let i=selected+1;i<compositeRhythm.length;i++){
-                    compositeRhythm[i] = 1-(1-compositeRhythm[i]) * factor;
-                }
-            } else {
-                compositeRhythm[selected]= compositeRhythm[selected-1]+(compositeRhythm[selected+1]-compositeRhythm[selected-1])*document.getElementById("slider").value
+        function updateGaps(gapNumber,exponent){
+            let oldGap = compositeRhythm[gapNumber]-compositeRhythm[gapNumber-1];
+            let newGap = oldGap**exponent;
+            if((newGap<oldGap && newGap<.001) || (newGap>oldGap && newGap>.99)){return}
+            let k= (1-newGap)/(1-oldGap);
+            for(let i=1;i<gapNumber;i++){
+                compositeRhythm[i] = compositeRhythm[i] * k;
+            }
+            for(let i=gapNumber;i<compositeRhythm.length-1;i++){
+                compositeRhythm[i] = 1-k*(1-compositeRhythm[i]);
             }
             drawCanvas();
         }
+
         let margin;
         let usableHeight;
         let portrait;
         function drawCanvas() {
+            document.getElementById("score").innerText = score();
             margin = 30;
-            let xTotal;
-            
+            let x=[];
             if(portrait==true){
-                xTotal = canvas.width-2*margin;
                 usableHeight = canvas.height-2*margin;
+                x=[0,canvas.width/5*1,canvas.width/5*2,canvas.width/5*3,canvas.width/5*4,canvas.width/5*5]
             } else {
-                xTotal = canvas.height-2*margin;
                 usableHeight = canvas.width-2*margin;
+                x=[0,canvas.height/5*1,canvas.height/5*2,canvas.height/5*3,canvas.height/5*4,canvas.height/5*5]
             }
-            let x=[margin,margin+.5*xTotal,margin+.55*xTotal,margin+.75*xTotal,margin+xTotal]
-            
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for(let i=0;i<compositeRhythm.length;i++){
-                ctx.beginPath();
-                ctx.lineWidth = 1;
-                if(portrait==true){
-                    ctx.moveTo(x[1],margin+compositeRhythm[i]*usableHeight);
-                    ctx.lineTo(x[2],margin+compositeRhythm[i]*usableHeight);
-                    ctx.lineTo(x[3],margin+i*usableHeight/(compositeRhythm.length-1));
-                    ctx.lineTo(x[4],margin+i*usableHeight/(compositeRhythm.length-1));
-                } else {
-                    ctx.moveTo(margin+compositeRhythm[i]*usableHeight,x[1]);
-                    ctx.lineTo(margin+compositeRhythm[i]*usableHeight,x[2]);
-                    ctx.lineTo(margin+i*usableHeight/(compositeRhythm.length-1),x[3]);
-                    ctx.lineTo(margin+i*usableHeight/(compositeRhythm.length-1),x[4]);
-                }
-                ctx.strokeStyle="black"
-                ctx.stroke();
                 if(i>0){
                     ctx.beginPath();
                     if(portrait==true){
-                        ctx.moveTo(x[0],margin+compositeRhythm[i-1]*usableHeight);
-                        ctx.lineTo(x[2],margin+compositeRhythm[i-1]*usableHeight);
-                        ctx.lineTo(x[3],margin+(i-1)*usableHeight/(compositeRhythm.length-1));
-                        ctx.lineTo(x[4],margin+(i-1)*usableHeight/(compositeRhythm.length-1));
-                        ctx.lineTo(x[4],margin+i*usableHeight/(compositeRhythm.length-1));
-                        ctx.lineTo(x[3],margin+i*usableHeight/(compositeRhythm.length-1));
-                        ctx.lineTo(x[2],margin+compositeRhythm[i]*usableHeight);
-                        ctx.lineTo(x[0],margin+compositeRhythm[i]*usableHeight);
+                        let y1=margin+compositeRhythm[i-1]*usableHeight;
+                        let y2=margin+(i-1)*usableHeight/(compositeRhythm.length-1);
+                        let y3=margin+compositeRhythm[i]*usableHeight;
+                        let y4=margin+i*usableHeight/(compositeRhythm.length-1);
+                        ctx.moveTo(x[0],y2);
+                        ctx.lineTo(x[1],y2);
+                        ctx.lineTo(x[2],y1);
+                        ctx.lineTo(x[3],y1);
+                        ctx.lineTo(x[4],y2);
+                        ctx.lineTo(x[5],y2);
+                        ctx.lineTo(x[5],y4);
+                        ctx.lineTo(x[4],y4);
+                        ctx.lineTo(x[3],y3);
+                        ctx.lineTo(x[2],y3);
+                        ctx.lineTo(x[1],y4);
+                        ctx.lineTo(x[0],y4);
                     } else {
-                        ctx.moveTo(margin+compositeRhythm[i-1]*usableHeight,x[0]);
-                        ctx.lineTo(margin+compositeRhythm[i-1]*usableHeight,x[2]);
-                        ctx.lineTo(margin+(i-1)*usableHeight/(compositeRhythm.length-1),x[3]);
-                        ctx.lineTo(margin+(i-1)*usableHeight/(compositeRhythm.length-1),x[4]);
-                        ctx.lineTo(margin+i*usableHeight/(compositeRhythm.length-1),x[4]);
-                        ctx.lineTo(margin+i*usableHeight/(compositeRhythm.length-1),x[3]);
-                        ctx.lineTo(margin+compositeRhythm[i]*usableHeight,x[2]);
-                        ctx.lineTo(margin+compositeRhythm[i]*usableHeight,x[0]);
+                        let y1=margin+compositeRhythm[i-1]*usableHeight;
+                        let y2=margin+(i-1)*usableHeight/(compositeRhythm.length-1);
+                        let y3=margin+compositeRhythm[i]*usableHeight;
+                        let y4=margin+i*usableHeight/(compositeRhythm.length-1);
+                        ctx.moveTo(y2,x[0]);
+                        ctx.lineTo(y2,x[1]);
+                        ctx.lineTo(y1,x[2]);
+                        ctx.lineTo(y1,x[3]);
+                        ctx.lineTo(y2,x[4]);
+                        ctx.lineTo(y2,x[5]);
+                        ctx.lineTo(y4,x[5]);
+                        ctx.lineTo(y4,x[4]);
+                        ctx.lineTo(y3,x[3]);
+                        ctx.lineTo(y3,x[2]);
+                        ctx.lineTo(y4,x[1]);
+                        ctx.lineTo(y4,x[0]);
                     }
                     ctx.closePath();
                     if(i % 2 == 0){
@@ -150,77 +150,67 @@
                 
             }
             for(let i=0;i<parts.length;i++){
-                ctx.beginPath();
+                
                 if(portrait==true){
-                    ctx.moveTo(x[0]+(x[1]-x[0])/(parts.length)*(i),margin+usableHeight*compositeRhythm[parts[i][0]]);
-                    ctx.lineTo(x[0]+(x[1]-x[0])/(parts.length)*(i),margin+usableHeight*compositeRhythm[parts[i][parts[i].length-1]]);
+                    for(let j=0;j<parts[i].length-1;j++){
+                        ctx.beginPath();
+                        ctx.moveTo(x[2]+(x[3]-x[2])/(parts.length-1)*(i),margin+usableHeight*compositeRhythm[parts[i][j]]);
+                        ctx.lineTo(x[2]+(x[3]-x[2])/(parts.length-1)*(i),margin+usableHeight*compositeRhythm[parts[i][j+1]]);
+                        ctx.lineWidth = 3;
+                        ctx.strokeStyle="black";
+                        ctx.stroke();
+                    }
+                    
                 } else {
-                    ctx.moveTo(margin+usableHeight*compositeRhythm[parts[i][0]],x[0]+(x[1]-x[0])/(parts.length)*(i));
-                    ctx.lineTo(margin+usableHeight*compositeRhythm[parts[i][parts[i].length-1]],x[0]+(x[1]-x[0])/(parts.length)*(i));
+                    for(let j=0;j<parts[i].length-1;j++){
+                        ctx.beginPath();
+                        ctx.moveTo(margin+usableHeight*compositeRhythm[parts[i][j]],x[2]+(x[3]-x[2])/(parts.length-1)*(i));
+                        ctx.lineTo(margin+usableHeight*compositeRhythm[parts[i][j+1]],x[2]+(x[3]-x[2])/(parts.length-1)*(i));
+                        ctx.lineWidth = 3;
+                        ctx.strokeStyle="black";
+                        ctx.stroke();
+                    }
+                    
                 }
-                ctx.lineWidth = 3;
-                ctx.strokeStyle="black";
-                ctx.stroke();
+                
                 for(let j=0;j<parts[i].length;j++){
                     ctx.beginPath();
                     if(portrait==true){
-                        ctx.arc(x[0]+(x[1]-x[0])/(parts.length)*(i),margin+usableHeight*compositeRhythm[parts[i][j]],10,0,6.28);
+                        ctx.arc(x[2]+(x[3]-x[2])/(parts.length-1)*(i),margin+usableHeight*compositeRhythm[parts[i][j]],10,0,6.28);
                     } else {
-                        ctx.arc(margin+usableHeight*compositeRhythm[parts[i][j]],x[0]+(x[1]-x[0])/(parts.length)*(i),10,0,6.28);
+                        ctx.arc(margin+usableHeight*compositeRhythm[parts[i][j]],x[2]+(x[3]-x[2])/(parts.length-1)*(i),10,0,6.28);
                     }
                     ctx.fillStyle = "black";
                     ctx.fill();
                 }
             }
-            ctx.beginPath();
-            if(selectedType=="gap"){
-                if(portrait==true){
-                    ctx.arc((x[3]+x[4])/2,margin+usableHeight*(selected+.5)/(compositeRhythm.length-1),10,0,6.28);
-                } else {
-                    ctx.arc(margin+usableHeight*(selected+.5)/(compositeRhythm.length-1),(x[3]+x[4])/2,10,0,6.28);
-                }
+            //ctx.beginPath();
+
+
                 
-            } else {
-                if(portrait==true){
-                    ctx.arc((x[3]+x[4])/2,margin+usableHeight*selected/(compositeRhythm.length-1),10,0,6.28);
-                } else {
-                    ctx.arc(margin+usableHeight*selected/(compositeRhythm.length-1),(x[3]+x[4])/2,10,0,6.28);
-                }
-                
-            }
-            ctx.fill();
+            
+            //ctx.fill();
             //document.getElementById("gap").innerText = minimumGap().toFixed(2);
-            document.getElementById("pearson").innerText = productOfPearsonCorrelations().toFixed(4);
-        }
-        function minimumGap(){
-            let m=1;
-            for(let i=0;i<compositeRhythm.length-1;i++){
-                let g=compositeRhythm[i+1]-compositeRhythm[i];
-                if(g<m){m=g}
-            }
-            return m;
+           //productOfPearsonCorrelations().toFixed(4);
         }
         function handleClick(event) {
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
+            let selected;
+            let incSize = document.getElementById("increment-selector").value;
             if(portrait==true){
-                selected= Math.round(2*(y-margin)/usableHeight*(compositeRhythm.length-1));
+                selected= Math.ceil((y-margin)/usableHeight*(compositeRhythm.length-1));
             } else {
-                selected= Math.round(2*(x-margin)/usableHeight*(compositeRhythm.length-1));
+                selected= Math.ceil((x-margin)/usableHeight*(compositeRhythm.length-1));
+            }
+            if(selected<1 || selected>compositeRhythm.length-1){return}
+            if(portrait==true){
+                if(x<canvas.width/2){updateGaps(selected,1/incSize)} else {updateGaps(selected,incSize)}
+            } else {
+                if(y<canvas.height/2){updateGaps(selected,incSize)} else {updateGaps(selected,1/incSize)}
             }
             
-            if(selected<=0 || selected>=2*(compositeRhythm.length-1)){return}
-            if(selected % 2 ==0){
-                selected = selected/2;
-                selectedType = "note";
-                document.getElementById("slider").value = (compositeRhythm[selected]-compositeRhythm[selected-1])/(compositeRhythm[selected+1]-compositeRhythm[selected-1]);
-            } else {
-                selected = (selected-1)/2;
-                selectedType = "gap";
-                document.getElementById("slider").value = (compositeRhythm[selected+1]-compositeRhythm[selected])**(1/Math.log2(compositeRhythm.length));
-            }
-            document.getElementById("slider").focus();
             drawCanvas();
         }
 
@@ -233,49 +223,66 @@
 
         resizeCanvas();
         drawCanvas();
-
-
-
-        function pearsonCorrelation(x, y) {
-            const n = x.length;
-            const meanX = x.reduce((sum, val) => sum + val, 0) / n;
-            const meanY = y.reduce((sum, val) => sum + val, 0) / n;
+        
+        function score(){
+            errorArray=[];
             
-            let numerator = 0;
-            let denominatorX = 0;
-            let denominatorY = 0;
-            
-            for (let i = 0; i < n; i++) {
-                const dx = x[i] - meanX;
-                const dy = y[i] - meanY;
-                numerator += dx * dy;
-                denominatorX += dx * dx;
-                denominatorY += dy * dy;
+            for (let i = 0; i < parts.length; i++) {
+                errorArray.push([]);
+                let v1=compositeRhythm[parts[i][0]];
+                let v4=compositeRhythm[parts[i][parts[i].length-1]];
+                for (let j = 0; j < parts[i].length-1; j++) {
+                    let v2=compositeRhythm[parts[i][j]];
+                    let v3=compositeRhythm[parts[i][j+1]];
+                    errorArray[i].push((v3-v2)/(v4-v1));
+                }
+            }
+            console.table(errorArray);
+            errorArray.push([]);
+            let score = 0;
+            for (let i = 0; i < parts[0].length-1; i++) {
+                errorArray[errorArray.length-1][i]=0;
+                for (let j = 0; j < parts.length; j++) {
+                    errorArray[errorArray.length-1][i] += errorArray[j][i];
+                }
+                errorArray[errorArray.length-1][i]/=parts.length;
+                console.table(errorArray);
+                for (let j = 0; j < parts.length; j++) {
+                    errorArray[j][i] -= errorArray[errorArray.length-1][i];
+                    score+=Math.abs(errorArray[j][i]);
+                    
+                }
+                console.table(errorArray);
+            }
+            for (let i = 0; i < parts[0].length-1; i++) {
+                for (let j = 0; j < parts.length; j++) {
+                    errorArray[j][i] = tanh(10*errorArray[j][i]);
+                }
+                console.table(errorArray);
             }
             
-            return numerator / Math.sqrt(denominatorX * denominatorY);
+            let m=0;
+            for(let i = 0;i<compositeRhythm.length-1;i++){
+                m+=1/(compositeRhythm[i+1]-compositeRhythm[i]);
+            }
+            return Math.round(score*m*10)/10;
         }
+        function tanh(x) {
+            const ePos = Math.exp(x);
+            const eNeg = Math.exp(-x);
+            return (ePos - eNeg) / (ePos + eNeg);
+        }
+        function getTemperatureColor(value) {
+            let r;
+            let g;
+            let b;
+
+            g=Math.floor((value+1)/2*255);
+            r=0;
+            b=0;
 
 
-        function productOfPearsonCorrelations() {
-            const n = parts.length;
-            let product = 1;
-            for (let i = 1; i < n; i++) {
-                let array1 = [...parts[i]];
-                for(let k=0;k<array1.length;k++){
-                    array1[k]=compositeRhythm[array1[k]];
-                }
-                console.log(i,array1);
-                for (let j = i + 1; j < n; j++) {
-                    let array2 = [...parts[j]];
-                    for(let k=0;k<array2.length;k++){
-                        array2[k]=compositeRhythm[array2[k]];
-                    }
-                    const correlation = pearsonCorrelation(array1, array2);
-                    product *= correlation;
-                }
-            }
-            return product;
+            return `rgb(${r}, ${g}, ${b})`;
         }
     </script>
 </body>
