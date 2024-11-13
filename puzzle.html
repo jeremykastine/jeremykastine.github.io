@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Augmentation Canon Puzzle</title>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    canvas {
+        display: block;
+        background-color: white;
+    }
+    body {
+        user-select: none;
+    }
+
+    #slider {
+        width: 100%;
+        height:10%;
+        position: fixed;
+        bottom: 0;
+    }
+
+</style>
+</head>
+<body>
+    
+    
+    
+    <canvas id="myCanvas"></canvas>
+    <div id="text-box" style="font-size: 20px;">
+        <br>
+        <br>
+        <input type="range" id="slider" min=0 max=1 value=0 step=.01 oninput="update()">
+        <br>
+    </div>
+    
+
+    <script>
+        const colorArray=['blue','red','green','purple','orange'];
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const levelParam = urlParams.get('level');
+        let partList = levelParam.split(",").map(Number);
+        partList=partList.map(x => x - Math.min(...partList));
+        let noteList = [];
+        for(let i = 0;i<=Math.max(...partList);i++){
+            let j = 0;
+            for(let k = 0;k<partList.length;k++){
+                if(partList[k]==i){
+                    noteList[k]=j;
+                    j++;
+                }
+            }
+        }
+        
+        let rhythm = [];
+        for(let i=0; i<=Math.max(...noteList);i++){
+            rhythm[i]=i/(Math.max(...noteList));
+        }
+        
+        let leftEndpoint = [];
+        let rightEndpoint = [];
+        let numParts = Math.max(...partList)+1;
+        for(let i=0;i<numParts;i++){
+            leftEndpoint[i]=(i+.1)/numParts;
+            rightEndpoint[i]=(i+.9)/numParts;
+        }
+        
+        console.log(leftEndpoint);
+        console.log(rightEndpoint);
+
+
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        let selected = -1;
+        function update(){
+            let sliderValue = Number(document.getElementById("slider").value);
+            if(selected>-1){
+                if(noteList[selected]==0){
+                    leftEndpoint[partList[selected]]=sliderValue*rightEndpoint[partList[selected]];
+                } else if(noteList[selected]==rhythm.length-1){
+                    rightEndpoint[partList[selected]]=leftEndpoint[partList[selected]]+sliderValue*(1-leftEndpoint[partList[selected]]);
+                } else {
+                    rhythm[noteList[selected]]=rhythm[noteList[selected]-1] + sliderValue * (rhythm[noteList[selected]+1]-rhythm[noteList[selected]-1]);
+                }
+            }
+            drawCanvas();
+        }
+        function resizeCanvas() {
+            if(window.innerWidth<window.innerHeight){
+                portrait=true;
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight - document.getElementById("text-box").offsetHeight;
+            } else {
+                portrait=false;
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight - document.getElementById("text-box").offsetHeight;
+            }
+        }
+        let margin=30;
+        function xOfNote(i){
+            let x=rhythm[noteList[i]];
+            x=x*(rightEndpoint[partList[i]]-leftEndpoint[partList[i]]);
+            x=x+leftEndpoint[partList[i]];
+            return margin+x*(canvas.width-2*margin);
+        }
+        function yOfPart(i){
+            return margin+(canvas.height/2-margin)*i/leftEndpoint.length;
+        }
+        
+        function drawCanvas() {
+            ctx.textBaseline="middle";
+            ctx.textAlign="center";
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for(let i=0;i<partList.length;i++){
+                let r=1;
+                if(selected>-1){
+                    if(noteList[selected]==0){
+                        if(partList[i]==partList[selected]){
+                            r=2-noteList[i]/(rhythm.length-1)
+                        }
+                    } else if(noteList[selected]==rhythm.length-1){
+                        if(partList[i]==partList[selected]){
+                            r=1+noteList[i]/(rhythm.length-1);
+                        }
+                    } else {
+                        if(noteList[i]==noteList[selected]){
+                            r=2
+                        }
+                    }
+                }
+                y=yOfPart(partList[i]);
+                
+                let x1=margin+i/(partList.length-1)*(canvas.width-2*margin);
+                let x2=xOfNote(i);
+                
+                ctx.beginPath();
+                ctx.arc(x1,canvas.height-25,(1+r)*8,0,6.28);
+                ctx.fillStyle=colorArray[partList[i]];
+                ctx.fill();
+                ctx.beginPath();
+                ctx.fillStyle="white";
+                ctx.font = (1+r)*10 + "px Arial";
+                ctx.fillText(partList[i]+1,x1,canvas.height-25);
+                ctx.beginPath();
+                ctx.moveTo(x1,canvas.height-45);
+                ctx.lineTo(x1,3*canvas.height/4);
+                ctx.lineTo(x2,canvas.height/2);
+                ctx.lineTo(x2,y);
+                ctx.lineWidth = r*2-1;
+                ctx.strokeStyle=colorArray[partList[i]];
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(x2,y,r*7,0,6.28);
+                ctx.fillStyle=colorArray[partList[i]];
+                ctx.fill();
+            }
+            for(let i=0;i<leftEndpoint.length;i++){
+                let y=yOfPart(i);
+                ctx.beginPath();
+                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpoint[i],y);
+                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpoint[i],y);
+                ctx.lineWidth = 3;
+                ctx.strokeStyle=colorArray[i];
+                ctx.stroke();
+            }
+        }
+        function handleClick(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            let prevSelected = selected;
+            if(y>3*canvas.height/4){
+                selected= Math.round((x-margin)/(canvas.width-2*margin)*(partList.length-1)); 
+            } else if(y<canvas.height/2){
+                selected = -1;
+                let minDist = 9999;
+                for(let i=0;i<partList.length;i++){
+                    let d = Math.abs(xOfNote(i)-x);
+                    if(d<minDist){
+                        minDist = d;
+                        selected = i;
+                    }
+                }
+            }
+              
+            if(selected==prevSelected){
+                selected=-1;
+            } else {
+                if(noteList[selected]==0){
+                    document.getElementById("slider").value = leftEndpoint[partList[selected]]/rightEndpoint[partList[selected]];
+                } else if(noteList[selected]==rhythm.length-1){
+                    document.getElementById("slider").value = (rightEndpoint[partList[selected]]-leftEndpoint[partList[selected]])/(1-leftEndpoint[partList[selected]]);
+                } else {
+                    document.getElementById("slider").value = (rhythm[noteList[selected]]-rhythm[noteList[selected]-1])/(rhythm[noteList[selected]+1]-rhythm[noteList[selected]-1]);
+                }
+            }
+            drawCanvas();
+        }
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            drawCanvas();
+        });
+
+        canvas.addEventListener('click', handleClick);
+
+        resizeCanvas();
+        drawCanvas();
+        
+
+
+
+    </script>
+</body>
+</html>
