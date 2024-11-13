@@ -185,7 +185,7 @@
                 selected = -1;
                 let minDist = 9999;
                 for(let i=0;i<partList.length;i++){
-                    let d = Math.abs(xOfNote(i)-x);
+                    let d = Math.sqrt((xOfNote(i)-x)**2+(yOfPart(partList[i])-y)**2);
                     if(d<minDist){
                         minDist = d;
                         selected = i;
