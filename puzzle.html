@@ -10,40 +10,48 @@
         padding: 0;
         height: 100%;
         overflow: hidden;
-    }
+    } 
 
-    canvas {
+    /* canvas {
         display: block;
         background-color: white;
-    }
-    body {
+        
+    } */
+    /* body {
         user-select: none;
+    } */
+
+
+    #canvasAndControls {
+      transform-origin: 0 0;
     }
 
-    #slider {
-        width: 100%;
-        height:10%;
-        position: fixed;
-        bottom: 0;
-    }
 
 </style>
 </head>
 <body>
-    
-    
-    
-    <canvas id="myCanvas"></canvas>
-    <div id="text-box" style="font-size: 20px;">
-        <br>
-        <br>
-        <input type="range" id="slider" min=0 max=1 value=0 step=.01 oninput="update()">
-        <br>
+    <div id="scoreBoard">
+        Current Score: <span id="score"></span>
     </div>
+    
+    <div id="canvasAndControls">
+        <canvas id="myCanvas"></canvas>
+        <div id="controls">
+            <br><br>
+            <input type="range" id="slider" min=0 max=1 value=0 step=.001 oninput="update()">
+            <br><br>
+            ppppppppppppppppppppppppppppppppppp
+        </div>
+        
+    </div>
+    
+    
+
+    
     
 
     <script>
-        const colorArray=['blue','red','green','purple','orange'];
+        const colorArray=['red','green','purple','orange'];
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const levelParam = urlParams.get('level');
@@ -93,16 +101,22 @@
             }
             drawCanvas();
         }
+        let portrait = true;
         function resizeCanvas() {
-            if(window.innerWidth<window.innerHeight){
+            if(window.innerHeight>window.innerWidth){
                 portrait=true;
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight - document.getElementById("text-box").offsetHeight;
+                canvas.width = window.innerHeight-document.getElementById('scoreBoard').offsetHeight;
+                canvas.height = window.innerWidth-document.getElementById('controls').offsetHeight;
+                canvasAndControls.style.transform = 'rotate(-90deg) scale(-1,1)';
+                slider.style.width=window.innerHeight +"px";
             } else {
                 portrait=false;
                 canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight - document.getElementById("text-box").offsetHeight;
+                canvas.height = window.innerHeight-document.getElementById('controls').offsetHeight-document.getElementById('scoreBoard').offsetHeight;
+                canvasAndControls.style.transform = ``;
+                slider.style.width=window.innerWidth +"px";
             }
+            
         }
         let margin=30;
         function xOfNote(i){
@@ -111,15 +125,32 @@
             x=x+leftEndpoint[partList[i]];
             return margin+x*(canvas.width-2*margin);
         }
+        function tOfNote(i){
+            let x=rhythm[noteList[i]];
+            x=x*(rightEndpoint[partList[i]]-leftEndpoint[partList[i]]);
+            x=x+leftEndpoint[partList[i]];
+            return x;
+        }
         function yOfPart(i){
-            return margin+(canvas.height/2-margin)*i/leftEndpoint.length;
+            return margin+(canvas.height/2-margin)*(i+.5)/(leftEndpoint.length);
         }
         
         function drawCanvas() {
-            ctx.textBaseline="middle";
-            ctx.textAlign="center";
+
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            
+            
+            for(let i=0;i<leftEndpoint.length;i++){
+                let y=yOfPart(i);
+                ctx.beginPath();
+                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpoint[i],y);
+                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpoint[i],y);
+                ctx.lineWidth = 3;
+                ctx.strokeStyle=colorArray[i];
+                ctx.stroke();
+            }
             for(let i=0;i<partList.length;i++){
                 let r=1;
                 if(selected>-1){
@@ -143,41 +174,54 @@
                 let x2=xOfNote(i);
                 
                 ctx.beginPath();
-                ctx.arc(x1,canvas.height-25,(1+r)*8,0,6.28);
+                ctx.arc(x1,canvas.height-25,7*r,0,6.28);
                 ctx.fillStyle=colorArray[partList[i]];
                 ctx.fill();
-                ctx.beginPath();
-                ctx.fillStyle="white";
-                ctx.font = (1+r)*10 + "px Arial";
-                ctx.fillText(partList[i]+1,x1,canvas.height-25);
                 ctx.beginPath();
                 ctx.moveTo(x1,canvas.height-45);
                 ctx.lineTo(x1,3*canvas.height/4);
                 ctx.lineTo(x2,canvas.height/2);
-                ctx.lineTo(x2,y);
+                //ctx.lineTo(x2,y);
                 ctx.lineWidth = r*2-1;
                 ctx.strokeStyle=colorArray[partList[i]];
                 ctx.stroke();
-
+                ctx.beginPath();
+                ctx.moveTo(x2,canvas.height/2);
+                ctx.lineTo(x2,y);
+                ctx.globalAlpha=.25;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.globalAlpha=1;
                 ctx.beginPath();
                 ctx.arc(x2,y,r*7,0,6.28);
                 ctx.fillStyle=colorArray[partList[i]];
                 ctx.fill();
             }
-            for(let i=0;i<leftEndpoint.length;i++){
-                let y=yOfPart(i);
-                ctx.beginPath();
-                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpoint[i],y);
-                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpoint[i],y);
-                ctx.lineWidth = 3;
-                ctx.strokeStyle=colorArray[i];
-                ctx.stroke();
+            let minGapSize = 9999;
+            let minGapLocation = -1;
+            for(let i=0;i<partList.length-1;i++){
+                if(tOfNote(i+1)-tOfNote(i)<minGapSize){
+                    minGapSize = tOfNote(i+1)-tOfNote(i);
+                    minGapLocation = margin+(i+.5)/(partList.length-1)*(canvas.width-2*margin);;
+                }
             }
+            let score =Math.max(0,Math.ceil(minGapSize*(partList.length-1)*100));
+            document.getElementById('score').innerText= score;
+
+            
         }
         function handleClick(event) {
             const rect = canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
+            let x;
+            let y;
+            if(portrait){
+                x = event.clientY - rect.top;
+                y = event.clientX - rect.left;
+            } else {
+                x = event.clientX - rect.left;
+                y = event.clientY - rect.top;
+            }
+            
             let prevSelected = selected;
             if(y>3*canvas.height/4){
                 selected= Math.round((x-margin)/(canvas.width-2*margin)*(partList.length-1)); 
@@ -213,6 +257,7 @@
         });
 
         canvas.addEventListener('click', handleClick);
+
 
         resizeCanvas();
         drawCanvas();
