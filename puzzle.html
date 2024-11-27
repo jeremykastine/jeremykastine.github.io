@@ -26,11 +26,10 @@
         touch-action: none;
         position: absolute;
         transform-origin: 0 0;
-        /*top: 0;*/
-        /*left: 0;*/
+        top: 0;
+        left: 0;
         user-select: none;
         z-index: 1;
-        border: 1px solid black;
     }
     #myCanvas2 {
         position: absolute;
@@ -57,6 +56,19 @@
     
 
     <script>
+        const getHeight = () => {
+        if (window.visualViewport) {
+            return window.visualViewport.height;  // Use visualViewport on supported browsers
+        }
+        return window.innerHeight;  // Fallback for older browsers
+        };
+        const getWidth = () => {
+        if (window.visualViewport) {
+            return window.visualViewport.width;  // Use visualViewport on supported browsers
+        }
+        return window.innerWidth;  // Fallback for older browsers
+        };
+
         let sliderValue = .5;
         const colorArray=['blue','red','green','purple','orange'];
         const queryString = window.location.search;
@@ -109,18 +121,18 @@
         function resizeCanvas() {
             if(window.innerHeight>window.innerWidth){
                 portrait=true;
-                canvas.width = window.innerHeight*.99;
-                canvas.height = window.innerWidth*.99;
+                canvas.width = getHeight();
+                canvas.height = getWidth();
                 myCanvas.style.transform = 'rotate(-90deg) scale(-1,1)';
-                canvas2.width = window.innerWidth*.99;
-                canvas2.height = window.innerHeight*.99;
+                canvas2.width = getWidth();
+                canvas2.height = getHeight();
             } else {
                 portrait=false;
-                canvas.width = window.innerWidth*.99;
-                canvas.height = window.innerHeight*.99;
+                canvas.width = getWidth();
+                canvas.height = getHeight();
                 myCanvas.style.transform = ``;
-                canvas2.width = window.innerWidth*.99;
-                canvas2.height = window.innerHeight*.99;
+                canvas2.width = getWidth();
+                canvas2.height = getHeight();
             }
         }
         let margin=30;
