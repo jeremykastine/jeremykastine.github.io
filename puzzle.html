@@ -109,18 +109,18 @@
         function resizeCanvas() {
             if(window.innerHeight>window.innerWidth){
                 portrait=true;
-                canvas.width = window.innerHeight/2;
-                canvas.height = window.innerWidth/2;
+                canvas.width = window.innerHeight*.99;
+                canvas.height = window.innerWidth*.99;
                 myCanvas.style.transform = 'rotate(-90deg) scale(-1,1)';
-                canvas2.width = window.innerWidth/2;
-                canvas2.height = window.innerHeight/2;
+                canvas2.width = window.innerWidth*.99;
+                canvas2.height = window.innerHeight*.99;
             } else {
                 portrait=false;
-                canvas.width = window.innerWidth/2;
-                canvas.height = window.innerHeight/2;
+                canvas.width = window.innerWidth*.99;
+                canvas.height = window.innerHeight*.99;
                 myCanvas.style.transform = ``;
-                canvas2.width = window.innerWidth/2;
-                canvas2.height = window.innerHeight/2;
+                canvas2.width = window.innerWidth*.99;
+                canvas2.height = window.innerHeight*.99;
             }
         }
         let margin=30;
