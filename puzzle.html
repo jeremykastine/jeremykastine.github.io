@@ -30,6 +30,7 @@
         /*left: 0;*/
         user-select: none;
         z-index: 1;
+        border: 1px solid black;
     }
     #myCanvas2 {
         position: absolute;
@@ -108,18 +109,18 @@
         function resizeCanvas() {
             if(window.innerHeight>window.innerWidth){
                 portrait=true;
-                canvas.width = window.innerHeight;
-                canvas.height = window.innerWidth;
+                canvas.width = window.innerHeight/2;
+                canvas.height = window.innerWidth/2;
                 myCanvas.style.transform = 'rotate(-90deg) scale(-1,1)';
-                canvas2.width = window.innerWidth;
-                canvas2.height = window.innerHeight;
+                canvas2.width = window.innerWidth/2;
+                canvas2.height = window.innerHeight/2;
             } else {
                 portrait=false;
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
+                canvas.width = window.innerWidth/2;
+                canvas.height = window.innerHeight/2;
                 myCanvas.style.transform = ``;
-                canvas2.width = window.innerWidth;
-                canvas2.height = window.innerHeight;
+                canvas2.width = window.innerWidth/2;
+                canvas2.height = window.innerHeight/2;
             }
         }
         let margin=30;
