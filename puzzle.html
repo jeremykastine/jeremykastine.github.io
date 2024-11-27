@@ -174,13 +174,15 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if(selected>-1){
                 ctx.beginPath();
-                ctx.arc(margin*2+sliderValue*(canvas.width-4*margin),(canvas.height+yOfSliderBound())/2,10,0,6.28);
-                ctx.fillStyle='Gray';
+                ctx.arc(margin*2+sliderValue*(canvas.width-4*margin),(canvas.height+yOfSliderBound())/2,(canvas.height-yOfSliderBound())/4,0,6.28);
+                ctx.fillStyle='LightGray';
                 ctx.fill();
             }
-            ctx.lineWidth = 1;
-            ctx.strokeStyle='WhiteSmoke';
+            ctx.lineWidth = .001*canvas.width;
+            
+            ctx.globalAlpha = .25;
             for(let i=0;i<partList.length;i++){
+                ctx.strokeStyle=colorArray[partList[i]];
                 ctx.beginPath();
                 ctx.moveTo(xOfConfig(i),yOfConfig(partList[i]));
                 ctx.lineTo(xOfConfig(i),yOfDiagTop());
@@ -190,9 +192,9 @@
                 ctx.lineTo(xOfNote(i),yOfPart(partList[i]));
                 ctx.stroke();
             }
+            
             for(let i=0;i<leftEndpoint.length;i++){
-                ctx.lineWidth = 3;
-                ctx.strokeStyle=colorArray[i];
+                ctx.strokeStyle=colorArray[partList[i]];
                 ctx.beginPath();
                 ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpoint[i],yOfPart(i));
                 ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpoint[i],yOfPart(i));
@@ -202,7 +204,7 @@
                 ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpointConfig[i],yOfConfig(i));
                 ctx.stroke();
             }
-            
+            ctx.globalAlpha = 1;
             for(let i=0;i<partList.length;i++){
                 let r=1;
                 if(selected>-1){
@@ -221,19 +223,19 @@
                     }
                 }
                 ctx.beginPath();
-                ctx.arc(xOfConfig(i),yOfConfig(partList[i]),7*r,0,6.28);
+                ctx.arc(xOfConfig(i),yOfConfig(partList[i]),canvas.width/(partList.length*15)*r,0,6.28);
                 ctx.fillStyle=colorArray[partList[i]];
                 ctx.fill();
                 ctx.beginPath();
                 ctx.moveTo(xOfConfig(i),yOfDiagTop());
                 ctx.lineTo(xOfNote(i),yOfDiagBot());
-                ctx.lineWidth = r*2-1;
+                ctx.lineWidth = (r*.002-.001)*canvas.width;;
                 ctx.strokeStyle=colorArray[partList[i]];
                 ctx.stroke();
 
                 ctx.fillStyle=colorArray[partList[i]];
                 ctx.beginPath();
-                ctx.arc(xOfNote(i),yOfPart(partList[i]),r*7,0,6.28);
+                ctx.arc(xOfNote(i),yOfPart(partList[i]),canvas.width/(partList.length*15)*r,0,6.28);
                 ctx.fill();
             }
             let minGapSize = 9999;
@@ -251,7 +253,7 @@
                 ctx2.font = (canvas.width-2*margin)/(3*partList.length)+'px Arial'; //
                 ctx2.fillStyle = 'Gray'; // Fill color for text
                 ctx2.textAlign = 'center';
-                ctx2.textBaseline = "top";
+                ctx2.textBaseline = "middle";
                 if(portrait){
                     ctx2.fillText(score,yOfDiagTop(),minGapLocation);
                 } else {
