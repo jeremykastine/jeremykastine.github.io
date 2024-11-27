@@ -6,7 +6,7 @@
 <title>Augmentation Canon Puzzle</title>
 <style>
     body, html {
-        touch-action: none;
+        /*touch-action: none;*/
         margin: 0;
         padding: 0;
         height: 100%;
@@ -21,28 +21,34 @@
 
 
     #myCanvas {
+        position: absolute;
         /*background-color: lightblue;*/
-        touch-action: none;
+        /*touch-action: none;
         /*position: absolute;*/
         transform-origin: 0 0;
         /*top: 0;*/
         /*left: 0;*/
-        user-select: none;
-        z-index: 10;
+        /*user-select: none;*/
+        z-index: 1;
     }
-    #scoreBoard {
+    #myCanvas2 {
         position: absolute;
+        /*touch-action: none;
+        user-select: none;*/
+        z-index: 0;
         top: 0;
         left: 0;
+        border: 1px solid black;
     }
+
 
 </style>
 </head>
 <body>
+    
     <canvas id="myCanvas"></canvas>
-    <div id="scoreBoard" style="font-size: 25px;">
-        Score: <br><span id="score"></span>
-    </div>
+    <canvas id="myCanvas2"></canvas>
+
 
     
 
@@ -72,6 +78,16 @@
         for(let i=0; i<=Math.max(...noteList);i++){
             rhythm[i]=i/(Math.max(...noteList));
         }
+        let leftEndpointConfig=[];
+        let rightEndpointConfig=[];
+        for(let i =0;i<noteList.length;i++){
+            if(noteList[i]==0){
+                leftEndpointConfig[partList[i]]=i/(noteList.length-1);
+            }
+            if(noteList[i]==rhythm.length-1){
+                rightEndpointConfig[partList[i]]=i/(noteList.length-1);
+            }
+        }
         
         let leftEndpoint = [];
         let rightEndpoint = [];
@@ -84,6 +100,8 @@
 
         const canvas = document.getElementById('myCanvas');
         const ctx = canvas.getContext('2d');
+        const canvas2 = document.getElementById('myCanvas2');
+        const ctx2 = canvas2.getContext('2d');
         let selected = -1;
 
         let portrait = true;
@@ -93,11 +111,15 @@
                 canvas.width = window.innerHeight;
                 canvas.height = window.innerWidth;
                 myCanvas.style.transform = 'rotate(-90deg) scale(-1,1)';
+                canvas2.width = window.innerWidth;
+                canvas2.height = window.innerHeight;
             } else {
                 portrait=false;
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
                 myCanvas.style.transform = ``;
+                canvas2.width = window.innerWidth;
+                canvas2.height = window.innerHeight;
             }
         }
         let margin=30;
@@ -107,38 +129,67 @@
             x=x+leftEndpoint[partList[i]];
             return margin+x*(canvas.width-2*margin);
         }
+        function xOfConfig(i){
+            return margin+i/(partList.length-1)*(canvas.width-2*margin)
+        }
+
+        
         function tOfNote(i){
             let x=rhythm[noteList[i]];
             x=x*(rightEndpoint[partList[i]]-leftEndpoint[partList[i]]);
             x=x+leftEndpoint[partList[i]];
             return x;
         }
+
+        function yOfConfig(i){
+            return yOfDiagTop()*(i+1)/(leftEndpoint.length+1);
+        }
+        function yOfDiagTop(){
+            return canvas.height*.28;
+        }
+        function yOfDiagBot(){
+            return canvas.height*.56;
+        }
         function yOfPart(i){
-            return canvas.height/6+(canvas.height/3)*(i+1)/(leftEndpoint.length+1);
+            return yOfDiagBot()+(yOfSliderBound()-yOfDiagBot())*(i+1)/(leftEndpoint.length+1);
+        }
+        function yOfSliderBound(){
+            return canvas.height*.84;
         }
         
         function drawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if(selected>-1){
                 ctx.beginPath();
-                ctx.arc(margin*2+sliderValue*(canvas.width-4*margin),canvas.height/12,10,0,6.28);
-                ctx.fillStyle='lightgray';
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(margin*2+sliderValue*(canvas.width-4*margin),canvas.height*11/12,10,0,6.28);
-                ctx.fillStyle='lightgray';
+                ctx.arc(margin*2+sliderValue*(canvas.width-4*margin),(canvas.height+yOfSliderBound())/2,10,0,6.28);
+                ctx.fillStyle='Gray';
                 ctx.fill();
             }
-            
-            for(let i=0;i<leftEndpoint.length;i++){
-                let y=yOfPart(i);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle='WhiteSmoke';
+            for(let i=0;i<partList.length;i++){
                 ctx.beginPath();
-                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpoint[i],y);
-                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpoint[i],y);
-                ctx.lineWidth = 3;
-                ctx.strokeStyle=colorArray[i];
+                ctx.moveTo(xOfConfig(i),yOfConfig(partList[i]));
+                ctx.lineTo(xOfConfig(i),yOfDiagTop());
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(xOfNote(i),yOfDiagBot());
+                ctx.lineTo(xOfNote(i),yOfPart(partList[i]));
                 ctx.stroke();
             }
+            for(let i=0;i<leftEndpoint.length;i++){
+                ctx.lineWidth = 3;
+                ctx.strokeStyle=colorArray[i];
+                ctx.beginPath();
+                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpoint[i],yOfPart(i));
+                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpoint[i],yOfPart(i));
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpointConfig[i],yOfConfig(i));
+                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpointConfig[i],yOfConfig(i));
+                ctx.stroke();
+            }
+            
             for(let i=0;i<partList.length;i++){
                 let r=1;
                 if(selected>-1){
@@ -152,40 +203,24 @@
                         }
                     } else {
                         if(noteList[i]==noteList[selected]){
-                            r=2
+                            r=2;
                         }
                     }
                 }
-                y=yOfPart(partList[i]);
-                
-                let x1=margin+i/(partList.length-1)*(canvas.width-2*margin);
-                let x2=xOfNote(i);
                 ctx.beginPath();
-                ctx.arc(x1,canvas.height*3/4,7*r,0,6.28);
+                ctx.arc(xOfConfig(i),yOfConfig(partList[i]),7*r,0,6.28);
                 ctx.fillStyle=colorArray[partList[i]];
                 ctx.fill();
                 ctx.beginPath();
-                ctx.moveTo(x1,canvas.height*3/4);
-                //ctx.lineTo(x1,3*canvas.height/4);
-                ctx.lineTo(x2,canvas.height/2);
-                //ctx.lineTo(x2,y);
+                ctx.moveTo(xOfConfig(i),yOfDiagTop());
+                ctx.lineTo(xOfNote(i),yOfDiagBot());
                 ctx.lineWidth = r*2-1;
                 ctx.strokeStyle=colorArray[partList[i]];
                 ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(x2,canvas.height/2);
-                ctx.lineTo(x2,y);
-                ctx.globalAlpha=.1;
-                ctx.lineWidth = 1;
-                ctx.strokeStyle='black';
-                ctx.stroke();
-                ctx.globalAlpha=1;
+
                 ctx.fillStyle=colorArray[partList[i]];
-                //ctx.beginPath();
-                //ctx.arc(x2,canvas.height/2,r*7,0,6.28);
-                //ctx.fill();
                 ctx.beginPath();
-                ctx.arc(x2,y,r*7,0,6.28);
+                ctx.arc(xOfNote(i),yOfPart(partList[i]),r*7,0,6.28);
                 ctx.fill();
             }
             let minGapSize = 9999;
@@ -198,7 +233,22 @@
             }
 
             let score =Math.max(0,Math.ceil(minGapSize*(partList.length-1)*100));
-            document.getElementById('score').innerText= score;
+            ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+            if(score>0){
+                ctx2.font = (canvas.width-2*margin)/(3*partList.length)+'px Arial'; //
+                ctx2.fillStyle = 'Gray'; // Fill color for text
+                ctx2.textAlign = 'center';
+                ctx2.textBaseline = "top";
+                if(portrait){
+                    ctx2.fillText(score,yOfDiagTop(),minGapLocation);
+                } else {
+                    ctx2.fillText(score,minGapLocation,yOfDiagTop());
+                }
+            }
+            
+            
+            
+            //ctx.fillText(score,50,50);
 
         }
 
@@ -211,7 +261,7 @@
         let isDragging = false;
 
         canvas.addEventListener('pointerdown', (e) => {
-            
+            console.log(1);
             const rect = canvas.getBoundingClientRect();
             let x;
             let y;
@@ -224,15 +274,23 @@
             }
 
 
-            if(y>5/6*canvas.height || y<canvas.height/6){
+            if(y>yOfSliderBound()){
                 
                 isDragging = true;
                 updateSlider(x);
             } else {
                 let prevSelected = selected;
-                if(y>canvas.height*2/3){
-                    selected= Math.round((x-margin)/(canvas.width-2*margin)*(partList.length-1)); 
-                } else if(y<canvas.height/2){
+                if(y<yOfDiagTop()){ 
+                    selected = -1;
+                    let minDist = 9999;
+                    for(let i=0;i<partList.length;i++){
+                        let d = Math.sqrt((xOfConfig(i)-x)**2+(yOfConfig(partList[i])-y)**2);
+                        if(d<minDist){
+                            minDist = d;
+                            selected = i;
+                        }
+                    }
+                } else if(y>yOfDiagBot()){
                     selected = -1;
                     let minDist = 9999;
                     for(let i=0;i<partList.length;i++){
