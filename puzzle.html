@@ -180,6 +180,16 @@
             }
             ctx.lineWidth = .001*canvas.width;
             
+            ctx.beginPath();
+            ctx.moveTo(0,yOfSliderBound());
+            ctx.lineTo(canvas.width,yOfSliderBound());
+            ctx.moveTo(0,yOfDiagBot());
+            ctx.lineTo(canvas.width,yOfDiagBot());
+            ctx.moveTo(0,yOfDiagTop());
+            ctx.lineTo(canvas.width,yOfDiagTop());
+            ctx.strokeStyle="black";
+            ctx.stroke();
+
             ctx.globalAlpha = .25;
             for(let i=0;i<partList.length;i++){
                 ctx.strokeStyle=colorArray[partList[i]];
@@ -243,7 +253,7 @@
             for(let i=0;i<partList.length-1;i++){
                 if(tOfNote(i+1)-tOfNote(i)<minGapSize){
                     minGapSize = tOfNote(i+1)-tOfNote(i);
-                    minGapLocation = margin+(i+.5)/(partList.length-1)*(canvas.width-2*margin);;
+                    minGapLocation = (xOfNote(i)+xOfNote(i+1)+xOfConfig(i)+xOfConfig(i+1))/4;
                 }
             }
 
@@ -254,10 +264,12 @@
                 ctx2.fillStyle = 'Gray'; // Fill color for text
                 ctx2.textAlign = 'center';
                 ctx2.textBaseline = "middle";
+                let textY = (yOfDiagBot()+yOfDiagTop())/2;
+                console.log(minGapLocation,textY);
                 if(portrait){
-                    ctx2.fillText(score,yOfDiagTop(),minGapLocation);
+                    ctx2.fillText(score,textY,minGapLocation);
                 } else {
-                    ctx2.fillText(score,minGapLocation,yOfDiagTop());
+                    ctx2.fillText(score,minGapLocation,textY);
                 }
             }
             
