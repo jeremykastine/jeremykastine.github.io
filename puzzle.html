@@ -202,7 +202,7 @@
                 ctx.lineTo(xOfNote(i),yOfPart(partList[i]));
                 ctx.stroke();
             }
-            
+            ctx.globalAlpha = 1;
             for(let i=0;i<leftEndpoint.length;i++){
                 ctx.strokeStyle=colorArray[i];
                 ctx.beginPath();
