@@ -240,13 +240,13 @@
                     }
                 }
                 ctx.beginPath();
-                ctx.arc(xOfConfig(i),yOfConfig(partList[i]),canvas.width/(partList.length*15)*r,0,6.28);
+                ctx.arc(xOfConfig(i),yOfConfig(partList[i]),canvas.width/(partList.length*12)*r,0,6.28);
                 ctx.fillStyle=colorArray[partList[i]];
                 ctx.fill();
                 ctx.beginPath();
                 ctx.globalAlpha = .4;
                 ctx.beginPath();
-                ctx.arc(xOfConfig(i),yOfDiagTop(),canvas.width/(partList.length*15)*r,0,6.28);
+                ctx.arc(xOfConfig(i),yOfDiagTop(),canvas.width/(partList.length*20)*r,0,6.28);
                 ctx.fillStyle=colorArray[partList[i]];
                 ctx.fill();
 
@@ -256,11 +256,11 @@
                 ctx.strokeStyle=colorArray[partList[i]];
                 ctx.stroke();
                ctx.beginPath();
-                ctx.arc(xOfNote(i),yOfDiagBot(),canvas.width/(partList.length*15)*r,0,6.28);
+                ctx.arc(xOfNote(i),yOfDiagBot(),canvas.width/(partList.length*20)*r,0,6.28);
                 ctx.fill();
                ctx.globalAlpha = 1; ctx.fillStyle=colorArray[partList[i]];
                 ctx.beginPath();
-                ctx.arc(xOfNote(i),yOfPart(partList[i]),canvas.width/(partList.length*15)*r,0,6.28);
+                ctx.arc(xOfNote(i),yOfPart(partList[i]),canvas.width/(partList.length*12)*r,0,6.28);
                 ctx.fill();
                 
             }
