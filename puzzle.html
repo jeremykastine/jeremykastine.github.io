@@ -244,7 +244,7 @@
                 ctx.fillStyle=colorArray[partList[i]];
                 ctx.fill();
                 ctx.beginPath();
-
+                ctx.globalAlpha = .6;
                 ctx.beginPath();
                 ctx.arc(xOfConfig(i),yOfDiagTop(),canvas.width/(partList.length*15)*r,0,6.28);
                 ctx.fillStyle=colorArray[partList[i]];
@@ -255,14 +255,14 @@
                 ctx.lineWidth = (r*.002-.001)*canvas.width;;
                 ctx.strokeStyle=colorArray[partList[i]];
                 ctx.stroke();
-
-                ctx.fillStyle=colorArray[partList[i]];
+               ctx.beginPath();
+                ctx.arc(xOfNote(i),yOfDiagBot(),canvas.width/(partList.length*15)*r,0,6.28);
+                ctx.fill();
+               ctx.globalAlpha = 1; ctx.fillStyle=colorArray[partList[i]];
                 ctx.beginPath();
                 ctx.arc(xOfNote(i),yOfPart(partList[i]),canvas.width/(partList.length*15)*r,0,6.28);
                 ctx.fill();
-                ctx.beginPath();
-                ctx.arc(xOfNote(i),yOfDiagBot(),canvas.width/(partList.length*15)*r,0,6.28);
-                ctx.fill();
+                
             }
             let minGapSize = 9999;
             let minGapLocation = -1;
