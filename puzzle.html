@@ -158,16 +158,16 @@
             return yOfDiagTop()*(i+2)/(leftEndpoint.length+3);
         }
         function yOfDiagTop(){
-            return canvas.height*.28;
+            return canvas.height*.35;
         }
         function yOfDiagBot(){
-            return canvas.height*.56;
+            return canvas.height*.65;
         }
         function yOfPart(i){
             return yOfDiagBot()+(yOfSliderBound()-yOfDiagBot())*(i+2)/(leftEndpoint.length+3);
         }
         function yOfSliderBound(){
-            return canvas.height*.84;
+            return canvas.height*.9;
         }
         
         function drawCanvas() {
