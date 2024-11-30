@@ -155,7 +155,7 @@
         }
 
         function yOfConfig(i){
-            return yOfDiagTop()*(i+1)/(leftEndpoint.length+1);
+            return yOfDiagTop()*(i+2)/(leftEndpoint.length+3);
         }
         function yOfDiagTop(){
             return canvas.height*.28;
@@ -164,7 +164,7 @@
             return canvas.height*.56;
         }
         function yOfPart(i){
-            return yOfDiagBot()+(yOfSliderBound()-yOfDiagBot())*(i+1)/(leftEndpoint.length+1);
+            return yOfDiagBot()+(yOfSliderBound()-yOfDiagBot())*(i+2)/(leftEndpoint.length+3);
         }
         function yOfSliderBound(){
             return canvas.height*.84;
