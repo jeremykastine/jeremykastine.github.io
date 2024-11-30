@@ -237,6 +237,12 @@
                 ctx.fillStyle=colorArray[partList[i]];
                 ctx.fill();
                 ctx.beginPath();
+
+                ctx.beginPath();
+                ctx.arc(xOfConfig(i),yOfDiagTop(),canvas.width/(partList.length*15)*r,0,6.28);
+                ctx.fillStyle=colorArray[partList[i]];
+                ctx.fill();
+
                 ctx.moveTo(xOfConfig(i),yOfDiagTop());
                 ctx.lineTo(xOfNote(i),yOfDiagBot());
                 ctx.lineWidth = (r*.002-.001)*canvas.width;;
@@ -246,6 +252,9 @@
                 ctx.fillStyle=colorArray[partList[i]];
                 ctx.beginPath();
                 ctx.arc(xOfNote(i),yOfPart(partList[i]),canvas.width/(partList.length*15)*r,0,6.28);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(xOfNote(i),yOfDiagBot(),canvas.width/(partList.length*15)*r,0,6.28);
                 ctx.fill();
             }
             let minGapSize = 9999;
