@@ -155,7 +155,11 @@
         }
 
         function yOfConfig(i){
-            return yOfDiagTop()*(i+2)/(leftEndpoint.length+3);
+            return yOfTopBorder()*(i+2)/(leftEndpoint.length+3);
+        }
+
+        function yOfTopBorder(){
+            return canvas.height*.35;
         }
         function yOfDiagTop(){
             return canvas.height*.35;
@@ -163,8 +167,11 @@
         function yOfDiagBot(){
             return canvas.height*.55;
         }
+        function yOfBottomBorder(){
+            return canvas.height*.55;
+        }
         function yOfPart(i){
-            return yOfDiagBot()+(yOfSliderBound()-yOfDiagBot())*(i+2)/(leftEndpoint.length+3);
+            return yOfBottomBorder()+(yOfSliderBound()-yOfBottomBorder())*(i+2)/(leftEndpoint.length+3);
         }
         function yOfSliderBound(){
             return canvas.height*.9;
@@ -183,9 +190,9 @@
             ctx.beginPath();
             ctx.moveTo(0,yOfSliderBound());
             ctx.lineTo(canvas.width,yOfSliderBound());
-            ctx.moveTo(0,yOfDiagBot());
+            ctx.moveTo(0,yOfBottomBorder());
             ctx.lineTo(canvas.width,yOfDiagBot());
-            ctx.moveTo(0,yOfDiagTop());
+            ctx.moveTo(0,yOfTopBorder());
             ctx.lineTo(canvas.width,yOfDiagTop());
             ctx.strokeStyle="gray";
             ctx.stroke();
