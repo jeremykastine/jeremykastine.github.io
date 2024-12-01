@@ -177,7 +177,7 @@
             return canvas.height*.84;
         }
         function baseRadius(){
-           return canvas.height*.1/(leftEndpoint.length+1);
+           return canvas.height*.07/(leftEndpoint.length+1);
         }
         function drawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -211,17 +211,17 @@
                 ctx.lineTo(xOfNote(i),yOfPart(partList[i]));
                 ctx.stroke();
             }
-            ctx.globalAlpha = 1;
+            ctx.globalAlpha = .3;
             ctx.lineWidth = baseRadius()*3;
             for(let i=0;i<leftEndpoint.length;i++){
                 ctx.strokeStyle=colorArray[i];
                 ctx.beginPath();
-                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpoint[i],yOfPart(i));
-                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpoint[i],yOfPart(i));
+                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpoint[i]-baseRadius(),yOfPart(i));
+                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpoint[i]+baseRadius(),yOfPart(i));
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpointConfig[i],yOfConfig(i));
-                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpointConfig[i],yOfConfig(i));
+                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpointConfig[i]-baseRadius(),yOfConfig(i));
+                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpointConfig[i]+baseRadius(),yOfConfig(i));
                 ctx.stroke();
             }
             ctx.globalAlpha = 1;
