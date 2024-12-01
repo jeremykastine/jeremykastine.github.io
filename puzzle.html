@@ -393,8 +393,8 @@
             } else {
                 sliderValue = (x-2*margin)/(canvas.width-4*margin);
             }
-            if(sliderValue>1){sliderValue=1}
-            if(sliderValue<0){sliderValue=0}
+            if(sliderValue>.999){sliderValue=.999}
+            if(sliderValue<.001){sliderValue=.001}
             updateCanonValues();
             drawCanvas();
         }
