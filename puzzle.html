@@ -213,7 +213,7 @@
                 ctx.stroke();
             }
             ctx.globalAlpha = .3;
-            ctx.lineWidth = baseRadius()*3;
+            ctx.lineWidth = baseRadius()*4;
             for(let i=0;i<leftEndpoint.length;i++){
                 ctx.strokeStyle=colorArray[i];
                 ctx.beginPath();
@@ -244,7 +244,7 @@
                     }
                 }
                 ctx.beginPath();
-                ctx.arc(xOfConfig(i),yOfConfig(partList[i]),canvas.width/(partList.length*12)*r,0,6.28);
+                ctx.arc(xOfConfig(i),yOfConfig(partList[i]),baseRadius()*r,0,6.28);
                 ctx.fillStyle=colorArray[partList[i]];
                 ctx.fill();
                 ctx.beginPath();
