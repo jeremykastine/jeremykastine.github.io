@@ -189,6 +189,7 @@
             }
             ctx.lineWidth = .001*canvas.width;
             
+            ctx.globalAlpha = 0;
             ctx.beginPath();
             ctx.moveTo(0,yOfSliderBound());
             ctx.lineTo(canvas.width,yOfSliderBound());
@@ -249,18 +250,23 @@
                 ctx.beginPath();
                 ctx.globalAlpha = .4;
                 ctx.beginPath();
-                ctx.arc(xOfConfig(i),yOfDiagTop(),canvas.width/(partList.length*20)*r,0,6.28);
+                //ctx.arc(xOfConfig(i),yOfDiagTop(),canvas.width/(partList.length*20)*r,0,6.28);
                 ctx.fillStyle=colorArray[partList[i]];
-                ctx.fill();
+                //ctx.fill();
 
-                ctx.moveTo(xOfConfig(i),yOfDiagTop());
-                ctx.lineTo(xOfNote(i),yOfDiagBot());
+                ctx.moveTo(xOfConfig(i),yOfTopBorder());
+ctx.lineTo(xOfConfig(i),yOfDiagTop());
+                
+ctx.lineTo(xOfNote(i),yOfDiagBot());
+ctx.lineTo(xOfNote(i),yOfBottomBorder());
+
+
                 ctx.lineWidth = (r*.002-.001)*canvas.width;;
                 ctx.strokeStyle=colorArray[partList[i]];
                 ctx.stroke();
                ctx.beginPath();
-                ctx.arc(xOfNote(i),yOfDiagBot(),canvas.width/(partList.length*20)*r,0,6.28);
-                ctx.fill();
+                //ctx.arc(xOfNote(i),yOfDiagBot(),canvas.width/(partList.length*20)*r,0,6.28);
+                //ctx.fill();
                ctx.globalAlpha = 1; ctx.fillStyle=colorArray[partList[i]];
                 ctx.beginPath();
                 ctx.arc(xOfNote(i),yOfPart(partList[i]),canvas.width/(partList.length*12)*r,0,6.28);
