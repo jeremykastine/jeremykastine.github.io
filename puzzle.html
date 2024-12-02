@@ -177,7 +177,7 @@
             return canvas.height*.84;
         }
         function baseRadius(){
-           return canvas.height*.07/(leftEndpoint.length+1);
+           return .2*yOfTopBorder()/(leftEndpoint.length+1);
         }
         function drawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -187,42 +187,18 @@
                 ctx.fillStyle='LightGray';
                 ctx.fill();
             }
-            ctx.lineWidth = .001*canvas.width;
-            
-            ctx.globalAlpha = 0;
-            ctx.beginPath();
-            ctx.moveTo(0,yOfSliderBound());
-            ctx.lineTo(canvas.width,yOfSliderBound());
-            ctx.moveTo(0,yOfBottomBorder());
-            ctx.lineTo(canvas.width,yOfBottomBorder());
-            ctx.moveTo(0,yOfTopBorder());
-            ctx.lineTo(canvas.width,yOfTopBorder());
-            ctx.strokeStyle="gray";
-            ctx.stroke();
 
-            ctx.globalAlpha = 0;
-            for(let i=0;i<partList.length;i++){
-                ctx.strokeStyle=colorArray[partList[i]];
-                ctx.beginPath();
-                ctx.moveTo(xOfConfig(i),yOfConfig(partList[i]));
-                ctx.lineTo(xOfConfig(i),yOfDiagTop());
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(xOfNote(i),yOfDiagBot());
-                ctx.lineTo(xOfNote(i),yOfPart(partList[i]));
-                ctx.stroke();
-            }
             ctx.globalAlpha = .3;
             ctx.lineWidth = baseRadius()*4;
             for(let i=0;i<leftEndpoint.length;i++){
                 ctx.strokeStyle=colorArray[i];
                 ctx.beginPath();
-                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpoint[i]-baseRadius(),yOfPart(i));
-                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpoint[i]+baseRadius(),yOfPart(i));
+                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpoint[i]-2*baseRadius(),yOfPart(i));
+                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpoint[i]+2*baseRadius(),yOfPart(i));
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpointConfig[i]-baseRadius(),yOfConfig(i));
-                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpointConfig[i]+baseRadius(),yOfConfig(i));
+                ctx.moveTo(margin+(canvas.width-2*margin)*leftEndpointConfig[i]-2*baseRadius(),yOfConfig(i));
+                ctx.lineTo(margin+(canvas.width-2*margin)*rightEndpointConfig[i]+2*baseRadius(),yOfConfig(i));
                 ctx.stroke();
             }
             ctx.globalAlpha = 1;
@@ -247,29 +223,28 @@
                 ctx.arc(xOfConfig(i),yOfConfig(partList[i]),baseRadius()*r,0,6.28);
                 ctx.fillStyle=colorArray[partList[i]];
                 ctx.fill();
+                
+                
                 ctx.beginPath();
-                ctx.globalAlpha = 1;
-                ctx.beginPath();
-                //ctx.arc(xOfConfig(i),yOfDiagTop(),canvas.width/(partList.length*20)*r,0,6.28);
-                ctx.fillStyle=colorArray[partList[i]];
-                //ctx.fill();
+
 
                 ctx.moveTo(xOfConfig(i),yOfTopBorder());
-ctx.lineTo(xOfConfig(i),yOfDiagTop());
-                
-ctx.lineTo(xOfNote(i),yOfDiagBot());
-ctx.lineTo(xOfNote(i),yOfBottomBorder());
+                ctx.lineTo(xOfConfig(i),yOfDiagTop());
+                                
+                ctx.lineTo(xOfNote(i),yOfDiagBot());
+                ctx.lineTo(xOfNote(i),yOfBottomBorder());
 
 
-                ctx.lineWidth = (r*.002-.001)*canvas.width;;
+                ctx.lineWidth = .15*r*baseRadius();
                 ctx.strokeStyle=colorArray[partList[i]];
+                ctx.globalAlpha = (r+1)/3;
                 ctx.stroke();
-               ctx.beginPath();
+                ctx.beginPath();
                 //ctx.arc(xOfNote(i),yOfDiagBot(),canvas.width/(partList.length*20)*r,0,6.28);
                 //ctx.fill();
-               ctx.globalAlpha = 1; ctx.fillStyle=colorArray[partList[i]];
+                ctx.globalAlpha = 1; ctx.fillStyle=colorArray[partList[i]];
                 ctx.beginPath();
-                ctx.arc(xOfNote(i),yOfPart(partList[i]),canvas.width/(partList.length*12)*r,0,6.28);
+                ctx.arc(xOfNote(i),yOfPart(partList[i]),baseRadius()*r,0,6.28);
                 ctx.fill();
                 
             }
@@ -285,7 +260,7 @@ ctx.lineTo(xOfNote(i),yOfBottomBorder());
             let score =Math.max(0,Math.ceil(minGapSize*(partList.length-1)*100));
             ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
             if(score>0){
-                ctx2.font = (canvas.width-2*margin)/(3*partList.length)+'px Arial'; //
+                ctx2.font = (yOfBottomBorder()-yOfTopBorder())/5+'px Arial'; //
                 ctx2.fillStyle = 'Gray'; // Fill color for text
                 ctx2.textAlign = 'center';
                 ctx2.textBaseline = "middle";
@@ -332,7 +307,7 @@ ctx.lineTo(xOfNote(i),yOfBottomBorder());
                 updateSlider(x);
             } else {
                 let prevSelected = selected;
-                if(y<yOfDiagTop()){ 
+                if(y<yOfTopBorder()){ 
                     selected = -1;
                     let minDist = 9999;
                     for(let i=0;i<partList.length;i++){
@@ -342,7 +317,7 @@ ctx.lineTo(xOfNote(i),yOfBottomBorder());
                             selected = i;
                         }
                     }
-                } else if(y>yOfDiagBot()){
+                } else if(y>yOfBottomBorder()){
                     selected = -1;
                     let minDist = 9999;
                     for(let i=0;i<partList.length;i++){

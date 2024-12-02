@@ -1,41 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disjoint Augmentation Canon Puzzle</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            line-height: 2;
-        }
-        .container {
-            display: flex;
-            flex-wrap: nowrap;
-            max-width: Level 1200px;
-        }
-        .column {
-            flex: Level 1;
-            min-width: 200px;
-            padding: Level 10px;
-        }
-        .column a {
-            text-decoration: none;
-            color: blue;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Puzzle Menu</title>
+  <style>
+    .puzzle-div {
+      display: none; /* Hide all divs by default */
+    }
+    .visible {
+      display: block; /* Show the currently selected div */
+    }
+    a {
+        text-decoration: none;
+        color: blue;
+    }
+    body {
+      line-height: 2; /* Sets line height to double spacing */
+      text-align: center;
+      font-size: 20px;
+    }
+    select {
+      font-size: 20px; /* Set the font size for the dropdown */
+      padding: 5px; /* Optional: Add some padding for better spacing */
+      
+    }
+  </style>
 </head>
 <body>
-
-    <h1>Disjoint Augmentation Canon Puzzle</h1>
-    <div class="container">
-        <div class="column">
-            <b>2-Part 4-Note Puzzles</b> <br>
-            <a href="puzzle.html?level=1,1,2,2,1,1,2,2">1: Level 11221122</a><br>
+  <label for="puzzle-selector">Select puzzle size: </label><br>
+  <select id="puzzle-selector">
+    <option value="puzzle1">2 Parts, 4 Notes</option>
+    <option value="puzzle2">2 Parts, 5 Notes</option>
+    <option value="puzzle3">3 Parts, 3 Notes</option>
+    <option value="puzzle4">3 Parts, 4 Notes</option>
+  </select>
+<br><br>
+  <div id="puzzle1" class="puzzle-div visible">
+    <a href="puzzle.html?level=1,1,2,2,1,1,2,2">1: Level 11221122</a><br>
 <a href="puzzle.html?level=1,2,1,2,1,2,1,2">2: Level 12121212</a><br>
 <a href="puzzle.html?level=1,1,1,1,2,2,2,2">3: Level 11112222</a><br>
 <a href="puzzle.html?level=1,2,1,2,1,1,2,2">4: Level 12121122</a><br>
@@ -63,104 +65,100 @@
 <a href="puzzle.html?level=1,2,1,2,1,2,2,1">26: Level 12121221</a><br>
 <a href="puzzle.html?level=1,2,1,1,2,2,2,1">27: Level 12112221</a><br>
 <a href="puzzle.html?level=1,2,2,2,1,1,2,1">28: Level 12221121</a><br>
-
-        </div>
-        <div class="column">
-            <b>2-Part 5-Note Puzzles</b> <br>
-            <a href="puzzle.html?level=1,2,1,2,1,2,1,2,1,2">1: Level 1212121212</a><br>
-            <a href="puzzle.html?level=1,1,1,1,1,2,2,2,2,2">2: Level 1111122222</a><br>
-            <a href="puzzle.html?level=1,1,2,2,1,1,1,2,2,2">3: Level 1122111222</a><br>
-            <a href="puzzle.html?level=1,1,1,2,2,2,1,1,2,2">4: Level 1112221122</a><br>
-            <a href="puzzle.html?level=1,2,1,2,1,2,1,1,2,2">5: Level 1212121122</a><br>
-            <a href="puzzle.html?level=1,1,2,2,1,2,1,2,1,2">6: Level 1122121212</a><br>
-            <a href="puzzle.html?level=1,2,1,1,2,2,1,1,2,2">7: Level 1211221122</a><br>
-            <a href="puzzle.html?level=1,1,2,2,1,1,2,2,1,2">8: Level 1122112212</a><br>
-            <a href="puzzle.html?level=1,1,2,2,1,2,1,1,2,2">9: Level 1122121122</a><br>
-            <a href="puzzle.html?level=1,2,1,2,1,1,1,2,2,2">10: Level 1212111222</a><br>
-            <a href="puzzle.html?level=1,1,1,2,2,2,1,2,1,2">11: Level 1112221212</a><br>
-            <a href="puzzle.html?level=1,1,1,1,2,1,2,2,2,2">12: Level 1111212222</a><br>
-            <a href="puzzle.html?level=1,1,2,2,1,1,2,1,2,2">13: Level 1122112122</a><br>
-            <a href="puzzle.html?level=1,1,2,1,2,2,1,1,2,2">14: Level 1121221122</a><br>
-            <a href="puzzle.html?level=1,1,2,1,2,1,2,1,2,2">15: Level 1121212122</a><br>
-            <a href="puzzle.html?level=1,2,1,1,2,2,1,2,1,2">16: Level 1211221212</a><br>
-            <a href="puzzle.html?level=1,2,1,2,1,1,2,2,1,2">17: Level 1212112212</a><br>
-            <a href="puzzle.html?level=1,2,1,1,1,1,2,2,2,2">18: Level 1211112222</a><br>
-            <a href="puzzle.html?level=1,1,1,1,2,2,2,2,1,2">19: Level 1111222212</a><br>
-            <a href="puzzle.html?level=1,1,1,2,2,1,2,1,2,2">20: Level 1112212122</a><br>
-            <a href="puzzle.html?level=1,1,2,1,2,1,1,2,2,2">21: Level 1121211222</a><br>
-            <a href="puzzle.html?level=1,2,1,2,1,1,2,1,2,2">22: Level 1212112122</a><br>
-            <a href="puzzle.html?level=1,1,2,1,2,2,1,2,1,2">23: Level 1121221212</a><br>
-            <a href="puzzle.html?level=1,2,2,1,2,2,2,1,1,1">24: Level 1221222111</a><br>
-            <a href="puzzle.html?level=1,1,1,2,2,2,1,2,2,1">25: Level 1112221221</a><br>
-            <a href="puzzle.html?level=1,2,1,1,2,1,2,1,2,2">26: Level 1211212122</a><br>
-            <a href="puzzle.html?level=1,1,2,1,2,1,2,2,1,2">27: Level 1121212212</a><br>
-            <a href="puzzle.html?level=1,1,1,1,2,2,1,2,2,2">28: Level 1111221222</a><br>
-            <a href="puzzle.html?level=1,1,1,2,1,1,2,2,2,2">29: Level 1112112222</a><br>
-            <a href="puzzle.html?level=1,1,2,1,1,2,1,2,2,2">30: Level 1121121222</a><br>
-            <a href="puzzle.html?level=1,1,1,2,1,2,2,1,2,2">31: Level 1112122122</a><br>
-            <a href="puzzle.html?level=1,1,1,2,1,2,2,2,1,2">32: Level 1112122212</a><br>
-            <a href="puzzle.html?level=1,2,1,1,1,2,1,2,2,2">33: Level 1211121222</a><br>
-            <a href="puzzle.html?level=1,1,1,2,2,1,2,2,1,2">34: Level 1112212212</a><br>
-            <a href="puzzle.html?level=1,2,1,1,2,1,1,2,2,2">35: Level 1211211222</a><br>
-            <a href="puzzle.html?level=1,1,1,2,1,2,1,2,2,2">36: Level 1112121222</a><br>
-            <a href="puzzle.html?level=1,1,2,2,1,2,2,1,2,1">37: Level 1122122121</a><br>
-            <a href="puzzle.html?level=1,2,1,2,2,1,2,2,1,1">38: Level 1212212211</a><br>
-            <a href="puzzle.html?level=1,1,2,1,1,1,2,2,2,2">39: Level 1121112222</a><br>
-            <a href="puzzle.html?level=1,1,1,1,2,2,2,1,2,2">40: Level 1111222122</a><br>
-            <a href="puzzle.html?level=1,2,1,1,1,2,2,2,1,2">41: Level 1211122212</a><br>
-            <a href="puzzle.html?level=1,1,1,2,2,1,1,2,2,2">42: Level 1112211222</a><br>
-            <a href="puzzle.html?level=1,1,2,2,1,2,2,2,1,1">43: Level 1122122211</a><br>
-            <a href="puzzle.html?level=1,1,2,2,2,1,2,2,1,1">44: Level 1122212211</a><br>
-            <a href="puzzle.html?level=1,2,2,1,2,2,1,2,1,1">45: Level 1221221211</a><br>
-            <a href="puzzle.html?level=1,1,2,1,2,2,1,2,2,1">46: Level 1121221221</a><br>
-            <a href="puzzle.html?level=1,2,1,1,1,2,2,1,2,2">47: Level 1211122122</a><br>
-            <a href="puzzle.html?level=1,1,2,1,1,2,2,2,1,2">48: Level 1121122212</a><br>
-            <a href="puzzle.html?level=1,2,2,1,2,1,2,2,1,1">49: Level 1221212211</a><br>
-            <a href="puzzle.html?level=1,1,2,2,1,2,1,2,2,1">50: Level 1122121221</a><br>
-            <a href="puzzle.html?level=1,2,1,1,2,1,2,2,1,2">51: Level 1211212212</a><br>
-            <a href="puzzle.html?level=1,1,2,2,2,2,2,1,1,1">52: Level 1122222111</a><br>
-            <a href="puzzle.html?level=1,1,1,2,2,2,2,2,1,1">53: Level 1112222211</a><br>
-            <a href="puzzle.html?level=1,1,1,1,2,2,2,2,2,1">54: Level 1111222221</a><br>
-            <a href="puzzle.html?level=1,1,1,2,2,1,2,2,2,1">55: Level 1112212221</a><br>
-            <a href="puzzle.html?level=1,2,2,2,1,2,2,1,1,1">56: Level 1222122111</a><br>
-            <a href="puzzle.html?level=1,2,1,2,2,2,2,1,1,1">57: Level 1212222111</a><br>
-            <a href="puzzle.html?level=1,1,1,2,2,2,2,1,2,1">58: Level 1112222121</a><br>
-            <a href="puzzle.html?level=1,2,1,1,2,2,1,2,2,1">59: Level 1211221221</a><br>
-            <a href="puzzle.html?level=1,2,2,1,2,2,1,1,2,1">60: Level 1221221121</a><br>
-            <a href="puzzle.html?level=1,2,1,2,1,2,2,1,2,1">61: Level 1212122121</a><br>
-            <a href="puzzle.html?level=1,2,1,2,2,1,2,1,2,1">62: Level 1212212121</a><br>
-            <a href="puzzle.html?level=1,1,2,1,2,2,2,2,1,1">63: Level 1121222211</a><br>
-            <a href="puzzle.html?level=1,2,2,2,2,1,2,1,1,1">64: Level 1222212111</a><br>
-            <a href="puzzle.html?level=1,1,1,2,1,2,2,2,2,1">65: Level 1112122221</a><br>
-            <a href="puzzle.html?level=1,1,2,2,2,2,1,2,1,1">66: Level 1122221211</a><br>
-            <a href="puzzle.html?level=1,2,1,2,2,2,1,2,1,1">67: Level 1212221211</a><br>
-            <a href="puzzle.html?level=1,1,2,1,2,2,2,1,2,1">68: Level 1121222121</a><br>
-            <a href="puzzle.html?level=1,1,2,1,2,1,2,2,2,1">69: Level 1121212221</a><br>
-            <a href="puzzle.html?level=1,2,2,2,1,2,1,2,1,1">70: Level 1222121211</a><br>
-            <a href="puzzle.html?level=1,2,2,2,1,1,2,2,1,1">71: Level 1222112211</a><br>
-            <a href="puzzle.html?level=1,1,2,2,1,1,2,2,2,1">72: Level 1122112221</a><br>
-            <a href="puzzle.html?level=1,1,2,1,1,2,2,1,2,2">73: Level 1121122122</a><br>
-            <a href="puzzle.html?level=1,2,1,2,1,2,2,2,1,1">74: Level 1212122211</a><br>
-            <a href="puzzle.html?level=1,1,2,2,2,1,2,1,2,1">75: Level 1122212121</a><br>
-            <a href="puzzle.html?level=1,2,1,2,2,2,1,1,2,1">76: Level 1212221121</a><br>
-            <a href="puzzle.html?level=1,2,1,1,2,2,2,1,2,1">77: Level 1211222121</a><br>
-            <a href="puzzle.html?level=1,2,2,1,2,1,2,1,2,1">78: Level 1221212121</a><br>
-            <a href="puzzle.html?level=1,2,1,2,1,2,1,2,2,1">79: Level 1212121221</a><br>
-            <a href="puzzle.html?level=1,2,1,1,2,2,2,2,1,1">80: Level 1211222211</a><br>
-            <a href="puzzle.html?level=1,1,2,2,2,2,1,1,2,1">81: Level 1122221121</a><br>
-            <a href="puzzle.html?level=1,2,2,2,2,1,1,2,1,1">82: Level 1222211211</a><br>
-            <a href="puzzle.html?level=1,1,2,1,1,2,2,2,2,1">83: Level 1121122221</a><br>
-            <a href="puzzle.html?level=1,2,2,2,2,1,1,1,2,1">84: Level 1222211121</a><br>
-            <a href="puzzle.html?level=1,2,1,1,1,2,2,2,2,1">85: Level 1211122221</a><br>
-            <a href="puzzle.html?level=1,2,1,1,2,1,2,2,2,1">86: Level 1211212221</a><br>
-            <a href="puzzle.html?level=1,2,2,2,1,2,1,1,2,1">87: Level 1222121121</a><br>
-            <a href="puzzle.html?level=1,2,1,2,1,1,2,2,2,1">88: Level 1212112221</a><br>
-            <a href="puzzle.html?level=1,2,2,2,1,1,2,1,2,1">89: Level 1222112121</a><br>
-            
-        </div>
-        <div class="column">
-            <b>3-Part 3-Note Puzzles</b> <br>
-            <a href="puzzle.html?level=1,1,1,2,3,2,3,2,3">1: Level 111232323</a><br>
+  </div>
+  <div id="puzzle2" class="puzzle-div">
+    <a href="puzzle.html?level=1,2,1,2,1,2,1,2,1,2">1: Level 1212121212</a><br>
+    <a href="puzzle.html?level=1,1,1,1,1,2,2,2,2,2">2: Level 1111122222</a><br>
+    <a href="puzzle.html?level=1,1,2,2,1,1,1,2,2,2">3: Level 1122111222</a><br>
+    <a href="puzzle.html?level=1,1,1,2,2,2,1,1,2,2">4: Level 1112221122</a><br>
+    <a href="puzzle.html?level=1,2,1,2,1,2,1,1,2,2">5: Level 1212121122</a><br>
+    <a href="puzzle.html?level=1,1,2,2,1,2,1,2,1,2">6: Level 1122121212</a><br>
+    <a href="puzzle.html?level=1,2,1,1,2,2,1,1,2,2">7: Level 1211221122</a><br>
+    <a href="puzzle.html?level=1,1,2,2,1,1,2,2,1,2">8: Level 1122112212</a><br>
+    <a href="puzzle.html?level=1,1,2,2,1,2,1,1,2,2">9: Level 1122121122</a><br>
+    <a href="puzzle.html?level=1,2,1,2,1,1,1,2,2,2">10: Level 1212111222</a><br>
+    <a href="puzzle.html?level=1,1,1,2,2,2,1,2,1,2">11: Level 1112221212</a><br>
+    <a href="puzzle.html?level=1,1,1,1,2,1,2,2,2,2">12: Level 1111212222</a><br>
+    <a href="puzzle.html?level=1,1,2,2,1,1,2,1,2,2">13: Level 1122112122</a><br>
+    <a href="puzzle.html?level=1,1,2,1,2,2,1,1,2,2">14: Level 1121221122</a><br>
+    <a href="puzzle.html?level=1,1,2,1,2,1,2,1,2,2">15: Level 1121212122</a><br>
+    <a href="puzzle.html?level=1,2,1,1,2,2,1,2,1,2">16: Level 1211221212</a><br>
+    <a href="puzzle.html?level=1,2,1,2,1,1,2,2,1,2">17: Level 1212112212</a><br>
+    <a href="puzzle.html?level=1,2,1,1,1,1,2,2,2,2">18: Level 1211112222</a><br>
+    <a href="puzzle.html?level=1,1,1,1,2,2,2,2,1,2">19: Level 1111222212</a><br>
+    <a href="puzzle.html?level=1,1,1,2,2,1,2,1,2,2">20: Level 1112212122</a><br>
+    <a href="puzzle.html?level=1,1,2,1,2,1,1,2,2,2">21: Level 1121211222</a><br>
+    <a href="puzzle.html?level=1,2,1,2,1,1,2,1,2,2">22: Level 1212112122</a><br>
+    <a href="puzzle.html?level=1,1,2,1,2,2,1,2,1,2">23: Level 1121221212</a><br>
+    <a href="puzzle.html?level=1,2,2,1,2,2,2,1,1,1">24: Level 1221222111</a><br>
+    <a href="puzzle.html?level=1,1,1,2,2,2,1,2,2,1">25: Level 1112221221</a><br>
+    <a href="puzzle.html?level=1,2,1,1,2,1,2,1,2,2">26: Level 1211212122</a><br>
+    <a href="puzzle.html?level=1,1,2,1,2,1,2,2,1,2">27: Level 1121212212</a><br>
+    <a href="puzzle.html?level=1,1,1,1,2,2,1,2,2,2">28: Level 1111221222</a><br>
+    <a href="puzzle.html?level=1,1,1,2,1,1,2,2,2,2">29: Level 1112112222</a><br>
+    <a href="puzzle.html?level=1,1,2,1,1,2,1,2,2,2">30: Level 1121121222</a><br>
+    <a href="puzzle.html?level=1,1,1,2,1,2,2,1,2,2">31: Level 1112122122</a><br>
+    <a href="puzzle.html?level=1,1,1,2,1,2,2,2,1,2">32: Level 1112122212</a><br>
+    <a href="puzzle.html?level=1,2,1,1,1,2,1,2,2,2">33: Level 1211121222</a><br>
+    <a href="puzzle.html?level=1,1,1,2,2,1,2,2,1,2">34: Level 1112212212</a><br>
+    <a href="puzzle.html?level=1,2,1,1,2,1,1,2,2,2">35: Level 1211211222</a><br>
+    <a href="puzzle.html?level=1,1,1,2,1,2,1,2,2,2">36: Level 1112121222</a><br>
+    <a href="puzzle.html?level=1,1,2,2,1,2,2,1,2,1">37: Level 1122122121</a><br>
+    <a href="puzzle.html?level=1,2,1,2,2,1,2,2,1,1">38: Level 1212212211</a><br>
+    <a href="puzzle.html?level=1,1,2,1,1,1,2,2,2,2">39: Level 1121112222</a><br>
+    <a href="puzzle.html?level=1,1,1,1,2,2,2,1,2,2">40: Level 1111222122</a><br>
+    <a href="puzzle.html?level=1,2,1,1,1,2,2,2,1,2">41: Level 1211122212</a><br>
+    <a href="puzzle.html?level=1,1,1,2,2,1,1,2,2,2">42: Level 1112211222</a><br>
+    <a href="puzzle.html?level=1,1,2,2,1,2,2,2,1,1">43: Level 1122122211</a><br>
+    <a href="puzzle.html?level=1,1,2,2,2,1,2,2,1,1">44: Level 1122212211</a><br>
+    <a href="puzzle.html?level=1,2,2,1,2,2,1,2,1,1">45: Level 1221221211</a><br>
+    <a href="puzzle.html?level=1,1,2,1,2,2,1,2,2,1">46: Level 1121221221</a><br>
+    <a href="puzzle.html?level=1,2,1,1,1,2,2,1,2,2">47: Level 1211122122</a><br>
+    <a href="puzzle.html?level=1,1,2,1,1,2,2,2,1,2">48: Level 1121122212</a><br>
+    <a href="puzzle.html?level=1,2,2,1,2,1,2,2,1,1">49: Level 1221212211</a><br>
+    <a href="puzzle.html?level=1,1,2,2,1,2,1,2,2,1">50: Level 1122121221</a><br>
+    <a href="puzzle.html?level=1,2,1,1,2,1,2,2,1,2">51: Level 1211212212</a><br>
+    <a href="puzzle.html?level=1,1,2,2,2,2,2,1,1,1">52: Level 1122222111</a><br>
+    <a href="puzzle.html?level=1,1,1,2,2,2,2,2,1,1">53: Level 1112222211</a><br>
+    <a href="puzzle.html?level=1,1,1,1,2,2,2,2,2,1">54: Level 1111222221</a><br>
+    <a href="puzzle.html?level=1,1,1,2,2,1,2,2,2,1">55: Level 1112212221</a><br>
+    <a href="puzzle.html?level=1,2,2,2,1,2,2,1,1,1">56: Level 1222122111</a><br>
+    <a href="puzzle.html?level=1,2,1,2,2,2,2,1,1,1">57: Level 1212222111</a><br>
+    <a href="puzzle.html?level=1,1,1,2,2,2,2,1,2,1">58: Level 1112222121</a><br>
+    <a href="puzzle.html?level=1,2,1,1,2,2,1,2,2,1">59: Level 1211221221</a><br>
+    <a href="puzzle.html?level=1,2,2,1,2,2,1,1,2,1">60: Level 1221221121</a><br>
+    <a href="puzzle.html?level=1,2,1,2,1,2,2,1,2,1">61: Level 1212122121</a><br>
+    <a href="puzzle.html?level=1,2,1,2,2,1,2,1,2,1">62: Level 1212212121</a><br>
+    <a href="puzzle.html?level=1,1,2,1,2,2,2,2,1,1">63: Level 1121222211</a><br>
+    <a href="puzzle.html?level=1,2,2,2,2,1,2,1,1,1">64: Level 1222212111</a><br>
+    <a href="puzzle.html?level=1,1,1,2,1,2,2,2,2,1">65: Level 1112122221</a><br>
+    <a href="puzzle.html?level=1,1,2,2,2,2,1,2,1,1">66: Level 1122221211</a><br>
+    <a href="puzzle.html?level=1,2,1,2,2,2,1,2,1,1">67: Level 1212221211</a><br>
+    <a href="puzzle.html?level=1,1,2,1,2,2,2,1,2,1">68: Level 1121222121</a><br>
+    <a href="puzzle.html?level=1,1,2,1,2,1,2,2,2,1">69: Level 1121212221</a><br>
+    <a href="puzzle.html?level=1,2,2,2,1,2,1,2,1,1">70: Level 1222121211</a><br>
+    <a href="puzzle.html?level=1,2,2,2,1,1,2,2,1,1">71: Level 1222112211</a><br>
+    <a href="puzzle.html?level=1,1,2,2,1,1,2,2,2,1">72: Level 1122112221</a><br>
+    <a href="puzzle.html?level=1,1,2,1,1,2,2,1,2,2">73: Level 1121122122</a><br>
+    <a href="puzzle.html?level=1,2,1,2,1,2,2,2,1,1">74: Level 1212122211</a><br>
+    <a href="puzzle.html?level=1,1,2,2,2,1,2,1,2,1">75: Level 1122212121</a><br>
+    <a href="puzzle.html?level=1,2,1,2,2,2,1,1,2,1">76: Level 1212221121</a><br>
+    <a href="puzzle.html?level=1,2,1,1,2,2,2,1,2,1">77: Level 1211222121</a><br>
+    <a href="puzzle.html?level=1,2,2,1,2,1,2,1,2,1">78: Level 1221212121</a><br>
+    <a href="puzzle.html?level=1,2,1,2,1,2,1,2,2,1">79: Level 1212121221</a><br>
+    <a href="puzzle.html?level=1,2,1,1,2,2,2,2,1,1">80: Level 1211222211</a><br>
+    <a href="puzzle.html?level=1,1,2,2,2,2,1,1,2,1">81: Level 1122221121</a><br>
+    <a href="puzzle.html?level=1,2,2,2,2,1,1,2,1,1">82: Level 1222211211</a><br>
+    <a href="puzzle.html?level=1,1,2,1,1,2,2,2,2,1">83: Level 1121122221</a><br>
+    <a href="puzzle.html?level=1,2,2,2,2,1,1,1,2,1">84: Level 1222211121</a><br>
+    <a href="puzzle.html?level=1,2,1,1,1,2,2,2,2,1">85: Level 1211122221</a><br>
+    <a href="puzzle.html?level=1,2,1,1,2,1,2,2,2,1">86: Level 1211212221</a><br>
+    <a href="puzzle.html?level=1,2,2,2,1,2,1,1,2,1">87: Level 1222121121</a><br>
+    <a href="puzzle.html?level=1,2,1,2,1,1,2,2,2,1">88: Level 1212112221</a><br>
+    <a href="puzzle.html?level=1,2,2,2,1,1,2,1,2,1">89: Level 1222112121</a><br>
+  </div>
+  <div id="puzzle3" class="puzzle-div">
+    <a href="puzzle.html?level=1,1,1,2,3,2,3,2,3">1: Level 111232323</a><br>
             <a href="puzzle.html?level=1,2,3,1,2,3,1,2,3">2: Level 123123123</a><br>
             <a href="puzzle.html?level=1,2,1,2,1,2,3,3,3">3: Level 121212333</a><br>
             <a href="puzzle.html?level=1,1,1,2,2,2,3,3,3">4: Level 111222333</a><br>
@@ -356,11 +354,9 @@
             <a href="puzzle.html?level=1,2,2,3,3,2,3,1,1">194: Level 122332311</a><br>
             <a href="puzzle.html?level=1,2,1,3,2,2,3,3,1">195: Level 121322331</a><br>
             <a href="puzzle.html?level=1,2,2,3,3,2,1,3,1">196: Level 122332131</a><br>
-            
-        </div>
-        <div class="column">
-            <b>3-Part 4-Note Puzzles</b> <br>
-            <a href="puzzle.html?level=1,1,1,1,2,3,2,3,2,3,2,3">1: Level 111123232323</a><br>
+  </div>
+  <div id="puzzle4" class="puzzle-div">
+    <a href="puzzle.html?level=1,1,1,1,2,3,2,3,2,3,2,3">1: Level 111123232323</a><br>
             <a href="puzzle.html?level=1,1,2,2,3,3,1,1,2,2,3,3">2: Level 112233112233</a><br>
             <a href="puzzle.html?level=1,2,3,1,2,3,1,2,3,1,2,3">3: Level 123123123123</a><br>
             <a href="puzzle.html?level=1,1,1,1,2,2,2,2,3,3,3,3">4: Level 111122223333</a><br>
@@ -3168,9 +3164,22 @@
             <a href="puzzle.html?level=1,2,2,3,3,2,3,1,1,2,3,1">2806: Level 122332311231</a><br>
             <a href="puzzle.html?level=1,1,2,3,2,2,3,3,3,1,2,1">2807: Level 112322333121</a><br>
             <a href="puzzle.html?level=1,2,1,3,3,3,2,2,3,2,1,1">2808: Level 121333223211</a><br>
-            
-        </div>
-    </div>
+  </div>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const selector = document.getElementById('puzzle-selector');
+      const divs = document.querySelectorAll('.puzzle-div');
+
+      const updateVisibility = () => {
+        divs.forEach(div => div.classList.remove('visible')); // Hide all divs
+        const selectedDiv = document.getElementById(selector.value);
+        selectedDiv.classList.add('visible'); // Show the selected div
+      };
+
+      selector.addEventListener('change', updateVisibility);
+      updateVisibility(); // Set the initial visibility
+    });
+  </script>
 </body>
 </html>
