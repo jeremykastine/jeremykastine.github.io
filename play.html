@@ -18,38 +18,47 @@
   }
 
 </style>
+
+
+
+
+
 <body>
+    <button id="playButton" onclick="playButton();">Play/Stop</button>
+    <label for="tempo">Tempo: </label> <input type="number" id="tempo" min="60" max="1000" step="10" value="400">
+
+    <label for="part1" id="part1label">Part 1</label><input type="checkbox" id="part1"> 
+    <label for="part2" id="part2label">Part 2</label><input type="checkbox" id="part2"> 
+    <label for="part3" id="part3label">Part 3</label><input type="checkbox" id="part3"> 
+    <label for="part4" id="part4label">Part 4</label><input type="checkbox" id="part4"> 
+    <label for="part5" id="part5label">Part 5</label><input type="checkbox" id="part5"> 
+    <br>
+    <canvas id="myCanvas" style="border: 3px solid black"></canvas>
+  
+  
 
 
 
-
+    <script type="module">
+        import { SplendidGrandPiano } from "https://unpkg.com/smplr/dist/index.mjs";
         
-        <button id="playButton" onclick="playButton()">Play/Stop</button>
-        <label for="tempo">Tempo: </label> <input type="number" id="tempo" min="60" max="600" step="10" value="200">
+        const context = new AudioContext();
+        const marimba = new SplendidGrandPiano(context);
+        
+        function playNote(noteNumber) {
+          context.resume();
+          marimba.start({ note: noteNumber, velocity: 80, duration: .1});
+        }
+        
+        //window.playNote = playNote; // Make the function globally accessible
 
-        <label for="part1" id="part1label">Part 1</label><input type="checkbox" id="part1"> 
-        <label for="part2" id="part2label">Part 2</label><input type="checkbox" id="part2"> 
-        <label for="part3" id="part3label">Part 3</label><input type="checkbox" id="part3"> 
-        <label for="part4" id="part4label">Part 4</label><input type="checkbox" id="part4"> 
-        <label for="part5" id="part5label">Part 5</label><input type="checkbox" id="part5"> 
-        <br>
-        <canvas id="myCanvas" style="border: 3px solid black"></canvas>
-  
-  
-
-
-
-    <script src="audio.js"></script>
-
-    
-    <script>
 
         const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
         const noteNames = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"];
 
-        let ins = [0,.5,0,0,1,1,.5,.7,.3,.5]
-        
-        let audioCtx;
+        let chords = [[60,64],[55,59,62],[57,60],[52,55,59],[53,57],[48,52,55],[53,57],[55,59]];
+        let tranpositions = [0,15,30];
+
         let currentTime;
         let prevTime;
         let currentBeat;
@@ -62,13 +71,13 @@
 
         
         let rhythm = q.get("rhythm").split(";");
-        for(i=0;i<rhythm.length;i++){
+        for(let i=0;i<rhythm.length;i++){
             rhythm[i] = rhythm[i].split(",").map(Number);
         }
         
         let compositeRhythm = rhythm.reduce((acc, curr) => acc.concat(curr), []);
         compositeRhythm.sort((a, b) => a - b);
-        rhythmMax = Math.max(...compositeRhythm);
+        let rhythmMax = Math.max(...compositeRhythm);
 
         let period;
         if(q.has("period")){
@@ -79,7 +88,7 @@
         let melody;
         if(q.has("melody")){
             melody = q.get("melody").split(";");
-            for(i=0;i<melody.length;i++){
+            for(let i=0;i<melody.length;i++){
                 melody[i] = melody[i].split(",").map(Number);
             }
         } else {
@@ -87,7 +96,7 @@
         }
 
         
-        for(i=0;i<5;i++){
+        for(let i=0;i<5;i++){
             if(i<rhythm.length){
                 document.getElementById("part" + (i+1)).style.display = "inline";
                 document.getElementById("part" + (i+1)).checked = false;
@@ -100,7 +109,6 @@
 
 
 
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function playButton(){
             document.getElementById('playButton').blur(); 
@@ -110,12 +118,12 @@
                 currentBeat = -4;
                 prevTime = Date.now();
                 currentTime = Date.now();
-                playNote(440,null);
+                //playNote(60);
             } else {
                 currentlyPlaying=false;
             }
         }
-
+        window.playButton = playButton;
         function drawEverything(){
             if(currentlyPlaying==true){
                 prevTime=currentTime;
@@ -132,8 +140,9 @@
                                 if(myMod(currentBeat-rhythm[i][j],period)<myMod(prevBeat-rhythm[i][j],period)){
                                     let f;
                                     if(document.getElementById("part"+(i+1)).checked){
-                                        f=110*2**(melody[i][j]/12);
-                                        playNote(f,ins);
+                                        for(let h=0;h<chords[j].length;h++){
+                                            playNote(chords[j][h]+tranpositions[i]);
+                                        }
                                     }
                                 }
                             }
@@ -171,10 +180,8 @@
                         c.fillStyle = 'black';
                         if(portrait){
                             c.fillText((rhythm[i][j]+period*shift).toFixed(1),pixPerPart,pixPerBeat*(4+rhythm[i][j]+shift*period));
-                            c.fillText(melody[i][j],pixPerPart*1.5,pixPerBeat*(4+rhythm[i][j]+shift*period));
                         } else {
                             c.fillText((rhythm[i][j]+period*shift).toFixed(1),pixPerBeat*(4+rhythm[i][j]+shift*period),pixPerPart);
-                            c.fillText(melody[i][j],pixPerBeat*(4+rhythm[i][j]+shift*period),pixPerPart*1.5);
                         }
                         
                         

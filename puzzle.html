@@ -31,23 +31,15 @@
         user-select: none;
         z-index: 1;
     }
-    #myCanvas2 {
-        position: absolute;
-        touch-action: none;
-        user-select: none;
-        z-index: 0;
-        top: 0;
-        left: 0;
-        border: 1px solid black;
-    }
+
 
 
 </style>
 </head>
 <body>
-    
+
     <canvas id="myCanvas"></canvas>
-    <canvas id="myCanvas2"></canvas>
+
 
 
     
@@ -113,8 +105,7 @@
 
         const canvas = document.getElementById('myCanvas');
         const ctx = canvas.getContext('2d');
-        const canvas2 = document.getElementById('myCanvas2');
-        const ctx2 = canvas2.getContext('2d');
+
         let selected = -1;
 
         let portrait = true;
@@ -124,15 +115,13 @@
                 canvas.width = getHeight();
                 canvas.height = getWidth();
                 myCanvas.style.transform = 'rotate(-90deg) scale(-1,1)';
-                canvas2.width = getWidth();
-                canvas2.height = getHeight();
+
             } else {
                 portrait=false;
                 canvas.width = getWidth();
                 canvas.height = getHeight();
                 myCanvas.style.transform = ``;
-                canvas2.width = getWidth();
-                canvas2.height = getHeight();
+
             }
         }
         let margin=30;
@@ -248,38 +237,46 @@
                 ctx.fill();
                 
             }
-            let minGapSize = 9999;
-            let minGapLocation = -1;
-            for(let i=0;i<partList.length-1;i++){
-                if(tOfNote(i+1)-tOfNote(i)<minGapSize){
-                    minGapSize = tOfNote(i+1)-tOfNote(i);
-                    minGapLocation = (xOfNote(i)+xOfNote(i+1)+xOfConfig(i)+xOfConfig(i+1))/4;
-                }
-            }
-
-            let score =Math.max(0,Math.ceil(minGapSize*(partList.length-1)*100));
-            ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+            const [minGap, gapIndex] = minGapAndIndex();
+            const score = Math.max(0,Math.round(minGap*(partList.length-1)*100));
             if(score>0){
-                ctx2.font = (yOfBottomBorder()-yOfTopBorder())/5+'px Arial'; //
-                ctx2.fillStyle = 'Gray'; // Fill color for text
-                ctx2.textAlign = 'center';
-                ctx2.textBaseline = "middle";
-                let textY = (yOfDiagBot()+yOfDiagTop())/2;
-                console.log(minGapLocation,textY);
+                let minGapLocation = (xOfConfig(gapIndex)+xOfConfig(gapIndex+1))/2;
+                ctx.font = (yOfBottomBorder()-yOfTopBorder())/5+'px Arial'; //
+                ctx.fillStyle = 'Gray'; // Fill color for text
+                ctx.textAlign = 'center';
+                ctx.textBaseline = "middle";
+                let textY = yOfDiagTop();
                 if(portrait){
-                    ctx2.fillText(score,textY,minGapLocation);
+                    ctx.save(); // Save the current state
+                    ctx.translate(minGapLocation, textY); // Move the origin to the desired location
+                    ctx.scale(-1,1);
+                    ctx.rotate(Math.PI / 2); // Rotate the canvas counterclockwise by 90 degrees
+                    ctx.fillText(score, 0, 0); // Draw the text at the new origin
+                    ctx.restore(); // Restore the canvas to its original state
                 } else {
-                    ctx2.fillText(score,minGapLocation,textY);
+                    ctx.fillText(score,minGapLocation,textY);
                 }
+
+                
+
+
+                
             }
             
-            
-            
-            //ctx.fillText(score,50,50);
 
         }
 
-
+        function minGapAndIndex(){
+            let minGapSize = 9999;
+            let index = -1;
+            for(let i=0;i<partList.length-1;i++){
+                if(tOfNote(i+1)-tOfNote(i)<minGapSize){
+                    minGapSize = tOfNote(i+1)-tOfNote(i);
+                    index = i;
+                }
+            }
+            return [minGapSize,index];
+        }
         window.addEventListener('resize', () => {
             resizeCanvas();
             drawCanvas();
@@ -288,7 +285,6 @@
         let isDragging = false;
 
         canvas.addEventListener('pointerdown', (e) => {
-            console.log(1);
             const rect = canvas.getBoundingClientRect();
             let x;
             let y;
@@ -326,8 +322,8 @@
                             minDist = d;
                             selected = i;
                         }
-                    }
-                }
+                    } 
+                } 
                 
                 if(selected==prevSelected){
                     selected=-1;
@@ -357,9 +353,29 @@
                 updateSlider(x);
             }
         });
-
+        let clickCount=0;
         canvas.addEventListener('pointerup', (e) => {
-            isDragging = false;
+            const rect = canvas.getBoundingClientRect();
+            if (isDragging) {
+                isDragging = false;
+            } else {
+                if(portrait){
+                    y = event.clientX - rect.left;
+                } else {
+                    y = event.clientY - rect.top;
+                }
+
+                if(y>yOfTopBorder() && y<yOfBottomBorder()){
+                    clickCount++;
+                    if(clickCount>2){
+                        clickCount=0
+                        openPlayer();
+                    }
+                } else {
+                    clickCount=0;
+                }
+            }
+            
         });
         canvas.addEventListener('pointercancel', () => {
             isDragging = false;
@@ -391,11 +407,30 @@
             }
         }
 
+        function openPlayer(){
+            let [gap,index]=minGapAndIndex();
+            if(gap>0){
+                let canonString = "";
+                for(let i=0;i<leftEndpoint.length;i++){
+                    for(let j=0;j<rhythm.length;j++){
+                        console.log(i,j);
+                        canonString = canonString + Math.round((leftEndpoint[i]+(rightEndpoint[i]-leftEndpoint[i])*rhythm[j])/gap*100)/100;
+                        if(j<rhythm.length-1){
+                            canonString= canonString+",";
+                        }
+                    }
+                    if(i<leftEndpoint.length-1){
+                        canonString = canonString + ";";
+                    }
+                }
+                console.log(canonString);
+                window.open("play.html?rhythm=" + canonString, "_blank");
+            }
+            
+        }
+
         resizeCanvas();
         drawCanvas();
-        
-
-
 
     </script>
 </body>
