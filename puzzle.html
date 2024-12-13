@@ -414,7 +414,7 @@
                 for(let i=0;i<leftEndpoint.length;i++){
                     for(let j=0;j<rhythm.length;j++){
                         console.log(i,j);
-                        canonString = canonString + Math.round((leftEndpoint[i]+(rightEndpoint[i]-leftEndpoint[i])*rhythm[j])/gap*100)/100;
+                        canonString = canonString + Math.round((leftEndpoint[i]+(rightEndpoint[i]-leftEndpoint[i])*rhythm[j])*1000)/1000;
                         if(j<rhythm.length-1){
                             canonString= canonString+",";
                         }
