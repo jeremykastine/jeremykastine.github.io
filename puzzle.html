@@ -285,6 +285,7 @@
         let isDragging = false;
 
         canvas.addEventListener('pointerdown', (e) => {
+            resizeCanvas();
             const rect = canvas.getBoundingClientRect();
             let x;
             let y;
