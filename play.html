@@ -48,7 +48,7 @@
         
         function playNote(noteNumber, velocity=80) {
           context.resume();
-          marimba.start({ note: noteNumber, velocity: velocity, duration: .01});
+          marimba.start({ note: noteNumber, velocity: velocity, duration: 1});
         }
 
         let chords = [[60,64],[55,59,62],[57,60],[52,55,59],[53,57],[48,52,55],[53,57],[55,59]];
