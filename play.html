@@ -175,6 +175,7 @@
            return canvas.height/3/(rhythm.length-1)/8;
         }
         function drawCanvas() {
+            resizeCanvas();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.lineWidth = baseRadius()*4;
             for(let i=0;i<rhythm.length;i++){
