@@ -41,11 +41,11 @@
     <canvas id="myCanvas"></canvas>
 
     <script type="module">
-        //import { SplendidGrandPiano } from "https://unpkg.com/smplr/dist/index.mjs";
-        import { Soundfont } from "https://unpkg.com/smplr/dist/index.mjs";
+        import { SplendidGrandPiano } from "https://unpkg.com/smplr/dist/index.mjs";
+        //import { Soundfont } from "https://unpkg.com/smplr/dist/index.mjs";
         const context = new AudioContext();
-        const marimba = new Soundfont(context, { instrument: "marimba" });
-        //const marimba = new SplendidGrandPiano(context);
+        //const marimba = new Soundfont(context, { instrument: "marimba" });
+        const marimba = new SplendidGrandPiano(context);
         
         function playNote(noteNumber, velocity=80) {
           context.resume();
@@ -55,7 +55,7 @@
         //let chords = [[60,64],[55,59,62],[57,60],[52,55,59],[53,57],[48,52,55],[53,57],[55,59]];
         //let tranpositions = [26,14,2];
         let chords = [[0],[3],[2],[-1],[0]];
-        let tranpositions = [60,48,36];
+        let tranpositions = [60,84,36];
 
 
         let currentTime;
